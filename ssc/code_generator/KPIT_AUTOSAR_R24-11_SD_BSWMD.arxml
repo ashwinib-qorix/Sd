@@ -1,0 +1,738 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+********************************************************************************
+**                 KPIT Technologies Limited                                  **
+**                                                                            **
+** KPIT Technologies Limited owns all the rights to this work. This work      **
+** shall not be copied, reproduced, used, modified or its information         **
+** disclosed without the prior written authorization of KPIT Technologies     **
+** Limited.                                                                   **
+**                                                                            **
+**  Module        : Sd Module                                                 **
+**                                                                            **
+**  PURPOSE       : BSW Module Description Template                           **
+**                                                                            **
+**  DESCRIPTION   : This file provides BSW Implementation, BSW Module         **
+**                  Description and API Details specific to Sd module and     **
+**                  it's dependent modules.                                   **
+**                                                                            **
+********************************************************************************
+** Date           Initials                Description                         **
+** 09-Jul-2025  Samarth Golwalkar         Initial Release                     **
+** 08-Aug-2025  Gourav Purohit            Version Updated to 0.2.0.           **
+** 01-Sep-2025  Gourav Purohit            Version Updated to 0.3.0.           **
+********************************************************************************
+-->
+<AUTOSAR xmlns="http://autosar.org/schema/r4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://autosar.org/schema/r4.0 AUTOSAR_00053.xsd"><AR-PACKAGES>
+    <AR-PACKAGE UUID="760f5e6c-353f-4a06-8f32-f384ce23b3d9">
+      <SHORT-NAME>AUTOSAR_SD</SHORT-NAME>
+      <AR-PACKAGES>
+        <AR-PACKAGE>
+          <SHORT-NAME>BswModuleDescriptions</SHORT-NAME>
+          <ELEMENTS>
+            <BSW-MODULE-DESCRIPTION>
+              <SHORT-NAME>Sd</SHORT-NAME>
+              <MODULE-ID>171</MODULE-ID>
+              <PROVIDED-ENTRYS>
+                <BSW-MODULE-ENTRY-REF-CONDITIONAL S="Sd_Init">
+                  <BSW-MODULE-ENTRY-REF DEST="BSW-MODULE-ENTRY">/AUTOSAR_SD/BswModuleEntrys/Sd_Init</BSW-MODULE-ENTRY-REF>
+                </BSW-MODULE-ENTRY-REF-CONDITIONAL>
+                <BSW-MODULE-ENTRY-REF-CONDITIONAL S="Sd_GetVersionInfo">
+                  <BSW-MODULE-ENTRY-REF DEST="BSW-MODULE-ENTRY">/AUTOSAR_SD/BswModuleEntrys/Sd_GetVersionInfo</BSW-MODULE-ENTRY-REF>
+                </BSW-MODULE-ENTRY-REF-CONDITIONAL>
+                <BSW-MODULE-ENTRY-REF-CONDITIONAL S="Sd_ServerServiceSetState">
+                  <BSW-MODULE-ENTRY-REF DEST="BSW-MODULE-ENTRY">/AUTOSAR_SD/BswModuleEntrys/Sd_ServerServiceSetState</BSW-MODULE-ENTRY-REF>
+                </BSW-MODULE-ENTRY-REF-CONDITIONAL>
+                <BSW-MODULE-ENTRY-REF-CONDITIONAL S="Sd_ClientServiceSetState">
+                  <BSW-MODULE-ENTRY-REF DEST="BSW-MODULE-ENTRY">/AUTOSAR_SD/BswModuleEntrys/Sd_ClientServiceSetState</BSW-MODULE-ENTRY-REF>
+                </BSW-MODULE-ENTRY-REF-CONDITIONAL>
+                <BSW-MODULE-ENTRY-REF-CONDITIONAL S="Sd_ConsumedEventGroupSetState">
+                  <BSW-MODULE-ENTRY-REF DEST="BSW-MODULE-ENTRY">/AUTOSAR_SD/BswModuleEntrys/Sd_ConsumedEventGroupSetState</BSW-MODULE-ENTRY-REF>
+                </BSW-MODULE-ENTRY-REF-CONDITIONAL>
+                <BSW-MODULE-ENTRY-REF-CONDITIONAL S="Sd_LocalIpAddrAssignmentChg">
+                  <BSW-MODULE-ENTRY-REF DEST="BSW-MODULE-ENTRY">/AUTOSAR_SD/BswModuleEntrys/Sd_LocalIpAddrAssignmentChg</BSW-MODULE-ENTRY-REF>
+                </BSW-MODULE-ENTRY-REF-CONDITIONAL>
+                <BSW-MODULE-ENTRY-REF-CONDITIONAL S="Sd_MainFunction">
+                  <BSW-MODULE-ENTRY-REF DEST="BSW-MODULE-ENTRY">/AUTOSAR_SD/BswModuleEntrys/Sd_MainFunction</BSW-MODULE-ENTRY-REF>
+                </BSW-MODULE-ENTRY-REF-CONDITIONAL>
+              </PROVIDED-ENTRYS>
+              <INTERNAL-BEHAVIORS>
+                <BSW-INTERNAL-BEHAVIOR>
+                  <SHORT-NAME>Sd_IB</SHORT-NAME>
+                  <EXCLUSIVE-AREAS>
+                    <EXCLUSIVE-AREA>
+                      <SHORT-NAME>MODE_STATUS_PROTECTION</SHORT-NAME>
+                    </EXCLUSIVE-AREA>
+                  </EXCLUSIVE-AREAS>
+                  <ENTITYS>
+                    <BSW-SCHEDULABLE-ENTITY>
+                      <SHORT-NAME>Sd_MainFunction_SE</SHORT-NAME>
+                      <CAN-ENTER-EXCLUSIVE-AREA-REFS>
+                        <CAN-ENTER-EXCLUSIVE-AREA-REF DEST="EXCLUSIVE-AREA">/AUTOSAR_SD/BswModuleDescriptions/Sd/Sd_IB/MODE_STATUS_PROTECTION</CAN-ENTER-EXCLUSIVE-AREA-REF>
+                      </CAN-ENTER-EXCLUSIVE-AREA-REFS>
+                      <MINIMUM-START-INTERVAL>0.0</MINIMUM-START-INTERVAL>
+                      <IMPLEMENTED-ENTRY-REF DEST="BSW-MODULE-ENTRY">/AUTOSAR_SD/BswModuleEntrys/Sd_MainFunction</IMPLEMENTED-ENTRY-REF>
+                    </BSW-SCHEDULABLE-ENTITY>
+                  </ENTITYS>
+                  <EVENTS>
+                    <BSW-TIMING-EVENT>
+                      <SHORT-NAME>Sd_MainFunction_TE</SHORT-NAME>
+                      <STARTS-ON-EVENT-REF DEST="BSW-SCHEDULABLE-ENTITY">/AUTOSAR_SD/BswModuleDescriptions/Sd/Sd_IB/Sd_MainFunction_SE</STARTS-ON-EVENT-REF>
+                      <PERIOD>0.01</PERIOD>
+                    </BSW-TIMING-EVENT>
+                  </EVENTS>
+                </BSW-INTERNAL-BEHAVIOR>
+              </INTERNAL-BEHAVIORS>
+            </BSW-MODULE-DESCRIPTION>
+          </ELEMENTS>
+        </AR-PACKAGE>
+        <AR-PACKAGE>
+          <SHORT-NAME>BswModuleEntrys</SHORT-NAME>
+          <ELEMENTS>
+            <BSW-MODULE-ENTRY>
+              <SHORT-NAME>Sd_Init</SHORT-NAME>
+              <SERVICE-ID>1</SERVICE-ID>
+              <IS-REENTRANT>false</IS-REENTRANT>
+              <IS-SYNCHRONOUS>true</IS-SYNCHRONOUS>
+              <CALL-TYPE>REGULAR</CALL-TYPE>
+              <EXECUTION-CONTEXT>UNSPECIFIED</EXECUTION-CONTEXT>
+              <SW-SERVICE-IMPL-POLICY>STANDARD</SW-SERVICE-IMPL-POLICY>
+              <BSW-ENTRY-KIND>ABSTRACT</BSW-ENTRY-KIND>
+              <ARGUMENTS>
+                <SW-SERVICE-ARG>
+                  <SHORT-NAME>ConfigPtr</SHORT-NAME>
+                  <DIRECTION>IN</DIRECTION>
+                  <SW-DATA-DEF-PROPS/>
+                </SW-SERVICE-ARG>
+              </ARGUMENTS>
+            </BSW-MODULE-ENTRY>
+            <BSW-MODULE-ENTRY>
+              <SHORT-NAME>Sd_GetVersionInfo</SHORT-NAME>
+              <SERVICE-ID>2</SERVICE-ID>
+              <IS-REENTRANT>true</IS-REENTRANT>
+              <IS-SYNCHRONOUS>true</IS-SYNCHRONOUS>
+              <CALL-TYPE>REGULAR</CALL-TYPE>
+              <EXECUTION-CONTEXT>UNSPECIFIED</EXECUTION-CONTEXT>
+              <SW-SERVICE-IMPL-POLICY>STANDARD</SW-SERVICE-IMPL-POLICY>
+              <ARGUMENTS>
+                <SW-SERVICE-ARG>
+                  <SHORT-NAME>versioninfo</SHORT-NAME>
+                  <DIRECTION>OUT</DIRECTION>
+                  <SW-DATA-DEF-PROPS>
+                    <SW-DATA-DEF-PROPS-VARIANTS>
+                      <SW-DATA-DEF-PROPS-CONDITIONAL>
+                        <SW-IMPL-POLICY>STANDARD</SW-IMPL-POLICY>
+                      </SW-DATA-DEF-PROPS-CONDITIONAL>
+                    </SW-DATA-DEF-PROPS-VARIANTS>
+                  </SW-DATA-DEF-PROPS>
+                </SW-SERVICE-ARG>
+              </ARGUMENTS>
+            </BSW-MODULE-ENTRY>
+            <BSW-MODULE-ENTRY S="">
+              <SHORT-NAME>Sd_ServerServiceSetState</SHORT-NAME>
+              <SHORT-NAME-PATTERN></SHORT-NAME-PATTERN>
+              <SERVICE-ID>7</SERVICE-ID>
+              <IS-REENTRANT>true</IS-REENTRANT>
+              <IS-SYNCHRONOUS>false</IS-SYNCHRONOUS>
+              <CALL-TYPE>REGULAR</CALL-TYPE>
+              <EXECUTION-CONTEXT>UNSPECIFIED</EXECUTION-CONTEXT>
+              <SW-SERVICE-IMPL-POLICY>STANDARD</SW-SERVICE-IMPL-POLICY>
+              <ARGUMENTS>
+                <SW-SERVICE-ARG>
+                  <SHORT-NAME>SdServerServiceHandleId</SHORT-NAME>
+                  <DIRECTION>IN</DIRECTION>
+                  <SW-DATA-DEF-PROPS>
+                    <SW-DATA-DEF-PROPS-VARIANTS>
+                      <SW-DATA-DEF-PROPS-CONDITIONAL/>
+                    </SW-DATA-DEF-PROPS-VARIANTS>
+                  </SW-DATA-DEF-PROPS>
+                </SW-SERVICE-ARG>
+                <SW-SERVICE-ARG>
+                  <SHORT-NAME>ServerServiceState</SHORT-NAME>
+                  <DIRECTION>IN</DIRECTION>
+                  <SW-DATA-DEF-PROPS>
+                    <SW-DATA-DEF-PROPS-VARIANTS>
+                      <SW-DATA-DEF-PROPS-CONDITIONAL>
+                        <IMPLEMENTATION-DATA-TYPE-REF DEST="IMPLEMENTATION-DATA-TYPE">/AUTOSAR_SD/ImplementationDataTypes/Sd_ServerServiceSetStateType</IMPLEMENTATION-DATA-TYPE-REF>
+                        <SW-IMPL-POLICY>STANDARD</SW-IMPL-POLICY>
+                      </SW-DATA-DEF-PROPS-CONDITIONAL>
+                    </SW-DATA-DEF-PROPS-VARIANTS>
+                  </SW-DATA-DEF-PROPS>
+                </SW-SERVICE-ARG>
+              </ARGUMENTS>
+            </BSW-MODULE-ENTRY>
+            <BSW-MODULE-ENTRY>
+              <SHORT-NAME>Sd_ClientServiceSetState</SHORT-NAME>
+              <SERVICE-ID>8</SERVICE-ID>
+              <IS-REENTRANT>true</IS-REENTRANT>
+              <IS-SYNCHRONOUS>false</IS-SYNCHRONOUS>
+              <CALL-TYPE>REGULAR</CALL-TYPE>
+              <EXECUTION-CONTEXT>UNSPECIFIED</EXECUTION-CONTEXT>
+              <SW-SERVICE-IMPL-POLICY>STANDARD</SW-SERVICE-IMPL-POLICY>
+              <ARGUMENTS>
+                <SW-SERVICE-ARG>
+                  <SHORT-NAME>ClientServiceHandleId</SHORT-NAME>
+                  <CATEGORY></CATEGORY>
+                  <DIRECTION>IN</DIRECTION>
+                  <SW-DATA-DEF-PROPS>
+                    <SW-DATA-DEF-PROPS-VARIANTS>
+                      <SW-DATA-DEF-PROPS-CONDITIONAL>
+                        <SW-IMPL-POLICY>STANDARD</SW-IMPL-POLICY>
+                      </SW-DATA-DEF-PROPS-CONDITIONAL>
+                    </SW-DATA-DEF-PROPS-VARIANTS>
+                  </SW-DATA-DEF-PROPS>
+                </SW-SERVICE-ARG>
+                <SW-SERVICE-ARG>
+                  <SHORT-NAME>ClientServiceState</SHORT-NAME>
+                  <DIRECTION>IN</DIRECTION>
+                  <SW-DATA-DEF-PROPS>
+                    <SW-DATA-DEF-PROPS-VARIANTS>
+                      <SW-DATA-DEF-PROPS-CONDITIONAL>
+                        <IMPLEMENTATION-DATA-TYPE-REF DEST="IMPLEMENTATION-DATA-TYPE">/AUTOSAR_SD/ImplementationDataTypes/Sd_ClientServiceSetStateType</IMPLEMENTATION-DATA-TYPE-REF>
+                        <SW-IMPL-POLICY>STANDARD</SW-IMPL-POLICY>
+                        <SW-INTENDED-RESOLUTION></SW-INTENDED-RESOLUTION>
+                      </SW-DATA-DEF-PROPS-CONDITIONAL>
+                    </SW-DATA-DEF-PROPS-VARIANTS>
+                  </SW-DATA-DEF-PROPS>
+                </SW-SERVICE-ARG>
+              </ARGUMENTS>
+            </BSW-MODULE-ENTRY>
+            <BSW-MODULE-ENTRY>
+              <SHORT-NAME>Sd_ConsumedEventGroupSetState</SHORT-NAME>
+              <SERVICE-ID>9</SERVICE-ID>
+              <IS-REENTRANT>true</IS-REENTRANT>
+              <IS-SYNCHRONOUS>false</IS-SYNCHRONOUS>
+              <CALL-TYPE>REGULAR</CALL-TYPE>
+              <EXECUTION-CONTEXT>UNSPECIFIED</EXECUTION-CONTEXT>
+              <SW-SERVICE-IMPL-POLICY>STANDARD</SW-SERVICE-IMPL-POLICY>
+              <ARGUMENTS>
+                <SW-SERVICE-ARG>
+                  <SHORT-NAME>SdConsumedEventGroupHandleId</SHORT-NAME>
+                  <DIRECTION>IN</DIRECTION>
+                  <SW-DATA-DEF-PROPS>
+                    <SW-DATA-DEF-PROPS-VARIANTS>
+                      <SW-DATA-DEF-PROPS-CONDITIONAL>
+                        <SW-IMPL-POLICY>STANDARD</SW-IMPL-POLICY>
+                      </SW-DATA-DEF-PROPS-CONDITIONAL>
+                    </SW-DATA-DEF-PROPS-VARIANTS>
+                  </SW-DATA-DEF-PROPS>
+                </SW-SERVICE-ARG>
+                <SW-SERVICE-ARG>
+                  <SHORT-NAME>ConsumedEventGroupState</SHORT-NAME>
+                  <DIRECTION>IN</DIRECTION>
+                  <SW-DATA-DEF-PROPS>
+                    <SW-DATA-DEF-PROPS-VARIANTS>
+                      <SW-DATA-DEF-PROPS-CONDITIONAL>
+                        <IMPLEMENTATION-DATA-TYPE-REF DEST="IMPLEMENTATION-DATA-TYPE">/AUTOSAR_SD/ImplementationDataTypes/Sd_ConsumedEventGroupCurrentStateType</IMPLEMENTATION-DATA-TYPE-REF>
+                        <SW-IMPL-POLICY>STANDARD</SW-IMPL-POLICY>
+                      </SW-DATA-DEF-PROPS-CONDITIONAL>
+                    </SW-DATA-DEF-PROPS-VARIANTS>
+                  </SW-DATA-DEF-PROPS>
+                </SW-SERVICE-ARG>
+              </ARGUMENTS>
+            </BSW-MODULE-ENTRY>
+            <BSW-MODULE-ENTRY>
+              <SHORT-NAME>Sd_LocalIpAddrAssignmentChg</SHORT-NAME>
+              <SERVICE-ID>5</SERVICE-ID>
+              <ROLE></ROLE>
+              <IS-REENTRANT>true</IS-REENTRANT>
+              <IS-SYNCHRONOUS>true</IS-SYNCHRONOUS>
+              <CALL-TYPE>REGULAR</CALL-TYPE>
+              <EXECUTION-CONTEXT>UNSPECIFIED</EXECUTION-CONTEXT>
+              <SW-SERVICE-IMPL-POLICY>STANDARD</SW-SERVICE-IMPL-POLICY>
+              <ARGUMENTS>
+                <SW-SERVICE-ARG>
+                  <SHORT-NAME>SoConId</SHORT-NAME>
+                  <DIRECTION>IN</DIRECTION>
+                  <SW-DATA-DEF-PROPS>
+                    <SW-DATA-DEF-PROPS-VARIANTS>
+                      <SW-DATA-DEF-PROPS-CONDITIONAL>
+                        <SW-IMPL-POLICY>STANDARD</SW-IMPL-POLICY>
+                      </SW-DATA-DEF-PROPS-CONDITIONAL>
+                    </SW-DATA-DEF-PROPS-VARIANTS>
+                  </SW-DATA-DEF-PROPS>
+                </SW-SERVICE-ARG>
+                <SW-SERVICE-ARG>
+                  <SHORT-NAME>State</SHORT-NAME>
+                  <DIRECTION>IN</DIRECTION>
+                  <SW-DATA-DEF-PROPS>
+                    <SW-DATA-DEF-PROPS-VARIANTS>
+                      <SW-DATA-DEF-PROPS-CONDITIONAL>
+                        <SW-IMPL-POLICY>STANDARD</SW-IMPL-POLICY>
+                      </SW-DATA-DEF-PROPS-CONDITIONAL>
+                    </SW-DATA-DEF-PROPS-VARIANTS>
+                  </SW-DATA-DEF-PROPS>
+                </SW-SERVICE-ARG>
+              </ARGUMENTS>
+            </BSW-MODULE-ENTRY>
+            <BSW-MODULE-ENTRY>
+              <SHORT-NAME>Sd_RxIndication</SHORT-NAME>
+              <SERVICE-ID>66</SERVICE-ID>
+              <IS-REENTRANT>true</IS-REENTRANT>
+              <IS-SYNCHRONOUS>true</IS-SYNCHRONOUS>
+              <CALL-TYPE>CALLBACK</CALL-TYPE>
+              <EXECUTION-CONTEXT>UNSPECIFIED</EXECUTION-CONTEXT>
+              <SW-SERVICE-IMPL-POLICY>STANDARD</SW-SERVICE-IMPL-POLICY>
+              <RETURN-TYPE>
+                <SHORT-NAME>RxPduId</SHORT-NAME>
+                <DIRECTION>IN</DIRECTION>
+                <SW-DATA-DEF-PROPS>
+                  <SW-DATA-DEF-PROPS-VARIANTS>
+                    <SW-DATA-DEF-PROPS-CONDITIONAL>
+                      <SW-IMPL-POLICY>STANDARD</SW-IMPL-POLICY>
+                    </SW-DATA-DEF-PROPS-CONDITIONAL>
+                  </SW-DATA-DEF-PROPS-VARIANTS>
+                </SW-DATA-DEF-PROPS>
+              </RETURN-TYPE>
+              <ARGUMENTS>
+                <SW-SERVICE-ARG>
+                  <SHORT-NAME>PduInfoPtr</SHORT-NAME>
+                  <CATEGORY></CATEGORY>
+                  <DIRECTION>IN</DIRECTION>
+                  <SW-DATA-DEF-PROPS>
+                    <SW-DATA-DEF-PROPS-VARIANTS>
+                      <SW-DATA-DEF-PROPS-CONDITIONAL>
+                        <SW-IMPL-POLICY>STANDARD</SW-IMPL-POLICY>
+                      </SW-DATA-DEF-PROPS-CONDITIONAL>
+                    </SW-DATA-DEF-PROPS-VARIANTS>
+                  </SW-DATA-DEF-PROPS>
+                </SW-SERVICE-ARG>
+              </ARGUMENTS>
+            </BSW-MODULE-ENTRY>
+            <BSW-MODULE-ENTRY>
+              <SHORT-NAME>Sd_MainFunction</SHORT-NAME>
+              <FUNCTION-PROTOTYPE-EMITTER>RTE</FUNCTION-PROTOTYPE-EMITTER>
+              <SERVICE-ID>6</SERVICE-ID>
+              <IS-REENTRANT>false</IS-REENTRANT>
+              <IS-SYNCHRONOUS>true</IS-SYNCHRONOUS>
+              <CALL-TYPE>SCHEDULED</CALL-TYPE>
+              <EXECUTION-CONTEXT>TASK</EXECUTION-CONTEXT>
+              <SW-SERVICE-IMPL-POLICY>STANDARD</SW-SERVICE-IMPL-POLICY>
+            </BSW-MODULE-ENTRY>
+          </ELEMENTS>
+        </AR-PACKAGE>
+        <AR-PACKAGE>
+          <SHORT-NAME>BswImplementations</SHORT-NAME>
+          <ELEMENTS>
+            <BSW-IMPLEMENTATION S="" UUID="">
+              <SHORT-NAME>Sd_Impl</SHORT-NAME>
+              <CATEGORY></CATEGORY>
+              <CODE-DESCRIPTORS>
+                <CODE S="" UUID="">
+                  <SHORT-NAME>Sd</SHORT-NAME>
+                  <CATEGORY></CATEGORY>
+                  <ARTIFACT-DESCRIPTORS>
+                    <AUTOSAR-ENGINEERING-OBJECT S="Sd.c">
+                      <SHORT-LABEL>Sd.c</SHORT-LABEL>
+                      <CATEGORY>SWSRC</CATEGORY>
+                      <DOMAIN>AUTOMOTIVE</DOMAIN>
+                    </AUTOSAR-ENGINEERING-OBJECT>
+                    <AUTOSAR-ENGINEERING-OBJECT S="Sd.h">
+                      <SHORT-LABEL>Sd.h</SHORT-LABEL>
+                      <CATEGORY>SWHDR</CATEGORY>
+                      <DOMAIN>AUTOMOTIVE</DOMAIN>
+                    </AUTOSAR-ENGINEERING-OBJECT>
+                    <AUTOSAR-ENGINEERING-OBJECT S="Sd_cbk.c">
+                      <SHORT-LABEL>Sd_cbk.c</SHORT-LABEL>
+                      <CATEGORY>SWSRC</CATEGORY>
+                      <DOMAIN>AUTOMOTIVE</DOMAIN>
+                    </AUTOSAR-ENGINEERING-OBJECT>
+                    <AUTOSAR-ENGINEERING-OBJECT S="Sd_cbk.h">
+                      <SHORT-LABEL>Sd_cbk.h</SHORT-LABEL>
+                      <CATEGORY>SWHDR</CATEGORY>
+                      <DOMAIN>AUTOMOTIVE</DOMAIN>
+                    </AUTOSAR-ENGINEERING-OBJECT>
+                    <AUTOSAR-ENGINEERING-OBJECT S="Sd_Internal.h">
+                      <SHORT-LABEL>Sd_Internal.h</SHORT-LABEL>
+                      <CATEGORY>SWHDR</CATEGORY>
+                      <DOMAIN>AUTOMOTIVE</DOMAIN>
+                    </AUTOSAR-ENGINEERING-OBJECT>
+                    <AUTOSAR-ENGINEERING-OBJECT S="Sd_Internal.c">
+                      <SHORT-LABEL>Sd_Internal.c</SHORT-LABEL>
+                      <CATEGORY>SWSRC</CATEGORY>
+                      <DOMAIN>AUTOMOTIVE</DOMAIN>
+                    </AUTOSAR-ENGINEERING-OBJECT>
+                    <AUTOSAR-ENGINEERING-OBJECT S="Sd_Rx.c">
+                      <SHORT-LABEL>Sd_Rx.c</SHORT-LABEL>
+                      <CATEGORY>SWSRC</CATEGORY>
+                      <DOMAIN>AUTOMOTIVE</DOMAIN>
+                    </AUTOSAR-ENGINEERING-OBJECT>
+                    <AUTOSAR-ENGINEERING-OBJECT S="Sd_State.c">
+                      <SHORT-LABEL>Sd_State.c</SHORT-LABEL>
+                      <CATEGORY>SWSRC</CATEGORY>
+                      <DOMAIN>AUTOMOTIVE</DOMAIN>
+                    </AUTOSAR-ENGINEERING-OBJECT>
+                    <AUTOSAR-ENGINEERING-OBJECT S="Sd_IntTypes.h">
+                      <SHORT-LABEL>Sd_IntTypes.h</SHORT-LABEL>
+                      <CATEGORY>SWHDR</CATEGORY>
+                      <DOMAIN>AUTOMOTIVE</DOMAIN>
+                    </AUTOSAR-ENGINEERING-OBJECT>
+                    <AUTOSAR-ENGINEERING-OBJECT S="Sd_Tx.c">
+                      <SHORT-LABEL>Sd_Tx.c</SHORT-LABEL>
+                      <CATEGORY>SWSRC</CATEGORY>
+                      <DOMAIN>AUTOMOTIVE</DOMAIN>
+                    </AUTOSAR-ENGINEERING-OBJECT>
+                    <AUTOSAR-ENGINEERING-OBJECT S="Sd_MemMap.h">
+                      <SHORT-LABEL>Sd_MemMap.h</SHORT-LABEL>
+                      <CATEGORY>SWHDR</CATEGORY>
+                      <DOMAIN>AUTOMOTIVE</DOMAIN>
+                    </AUTOSAR-ENGINEERING-OBJECT>
+                    <AUTOSAR-ENGINEERING-OBJECT S="Sd_Version.c">
+                      <SHORT-LABEL>Sd_Version.c</SHORT-LABEL>
+                      <CATEGORY>SWSRC</CATEGORY>
+                      <DOMAIN>AUTOMOTIVE</DOMAIN>
+                    </AUTOSAR-ENGINEERING-OBJECT>
+                    <AUTOSAR-ENGINEERING-OBJECT S="Sd_Version.h">
+                      <SHORT-LABEL>Sd_Version.h</SHORT-LABEL>
+                      <CATEGORY>SWHDR</CATEGORY>
+                      <DOMAIN>AUTOMOTIVE</DOMAIN>
+                    </AUTOSAR-ENGINEERING-OBJECT>
+                  </ARTIFACT-DESCRIPTORS>
+                </CODE>
+              </CODE-DESCRIPTORS>
+              <COMPILERS>
+                <COMPILER>
+                  <SHORT-NAME>ghs_Compiler</SHORT-NAME>
+                  <NAME>ghs_Compiler</NAME>
+                  <OPTIONS>cpu=ppc5748gz4204 -c -ansi -noSPE -Ospeed -sda=0 -vle -dual_debug -G --no_exceptions -Wundef -Wimplicit-int -Wshadow -Wtrigraphs --prototype_errors --incorrect_pragma_warnings -preprocess_assembly_files -nostartfile --short_enum -DGHS </OPTIONS>
+                  <VENDOR>Green Hills</VENDOR>
+                  <VERSION>6.1.0</VERSION>
+                </COMPILER>
+              </COMPILERS>
+              <GENERATED-ARTIFACTS>
+                <DEPENDENCY-ON-ARTIFACT>
+                  <SHORT-NAME>Sd_MemMap</SHORT-NAME>
+                  <CATEGORY></CATEGORY>
+                  <ARTIFACT-DESCRIPTOR S="Sd_MemMap.h">
+                    <SHORT-LABEL>Sd_MemMap.h</SHORT-LABEL>
+                    <CATEGORY>SWHDR</CATEGORY>
+                    <REVISION-LABELS>
+                      <REVISION-LABEL>1.0.1</REVISION-LABEL>
+                    </REVISION-LABELS>
+                    <DOMAIN>AUTOMOTIVE</DOMAIN>
+                  </ARTIFACT-DESCRIPTOR>
+                </DEPENDENCY-ON-ARTIFACT>
+                <DEPENDENCY-ON-ARTIFACT>
+                  <SHORT-NAME>KPIT</SHORT-NAME>
+                  <CATEGORY>CODEGENERATOR</CATEGORY>
+                  <ARTIFACT-DESCRIPTOR S="C4K">
+                    <SHORT-LABEL>C4K</SHORT-LABEL>
+                    <CATEGORY>CODEGENERATOR</CATEGORY>
+                    <REVISION-LABELS>
+                      <REVISION-LABEL>23.1.X</REVISION-LABEL>
+                    </REVISION-LABELS>
+                    <DOMAIN>AUTOMOTIVE</DOMAIN>
+                  </ARTIFACT-DESCRIPTOR>
+                  <USAGES>
+                    <USAGE>CODEGENERATION</USAGE>
+                  </USAGES>
+                </DEPENDENCY-ON-ARTIFACT>
+              </GENERATED-ARTIFACTS>
+              <LINKERS>
+                <LINKER>
+                  <SHORT-NAME>ghs_Linker</SHORT-NAME>
+                  <NAME>ghs_Linker</NAME>
+                  <OPTIONS>-cpu=ppc5748gz4204 -nostartfiles -linker_warnings -vle</OPTIONS>
+                  <VENDOR>Green Hills</VENDOR>
+                  <VERSION>6.1.0</VERSION>
+                </LINKER>
+              </LINKERS>
+              <PROGRAMMING-LANGUAGE>C</PROGRAMMING-LANGUAGE>
+              <RESOURCE-CONSUMPTION>
+                <SHORT-NAME>Sd_RC</SHORT-NAME>
+                <EXECUTION-TIMES>
+                  <MEASURED-EXECUTION-TIME>
+                    <SHORT-NAME>Sd_MainFunction_MET</SHORT-NAME>
+                  </MEASURED-EXECUTION-TIME>
+                </EXECUTION-TIMES>
+                <HEAP-USAGES>
+                  <MEASURED-HEAP-USAGE>
+                    <SHORT-NAME>Sd_MHU</SHORT-NAME>
+                  </MEASURED-HEAP-USAGE>
+                  <ROUGH-ESTIMATE-HEAP-USAGE>
+                    <SHORT-NAME>Sd_REHU</SHORT-NAME>
+                  </ROUGH-ESTIMATE-HEAP-USAGE>
+                  <WORST-CASE-HEAP-USAGE>
+                    <SHORT-NAME>Sd_WCHU</SHORT-NAME>
+                  </WORST-CASE-HEAP-USAGE>
+                </HEAP-USAGES>
+                <MEMORY-SECTIONS>
+                  <MEMORY-SECTION>
+                    <SHORT-NAME>CONFIG_CONST_8</SHORT-NAME>
+                    <ALIGNMENT>8</ALIGNMENT>
+                    <PREFIX-REF DEST="SECTION-NAME-PREFIX">/AUTOSAR_SD/BswImplementations/Sd_Impl/Sd_RC/Sd</PREFIX-REF>
+                    <SYMBOL>DATA</SYMBOL>
+                  </MEMORY-SECTION>
+                  <MEMORY-SECTION>
+                    <SHORT-NAME>CONFIG_CONST_UNSPECIFIED</SHORT-NAME>
+                    <ALIGNMENT>UNSPECIFIED</ALIGNMENT>
+                    <PREFIX-REF DEST="SECTION-NAME-PREFIX">/AUTOSAR_SD/BswImplementations/Sd_Impl/Sd_RC/Sd</PREFIX-REF>
+                    <SYMBOL>DATA</SYMBOL>
+                  </MEMORY-SECTION>
+                  <MEMORY-SECTION>
+                    <SHORT-NAME>VAR_CLEARED_BOOLEAN</SHORT-NAME>
+                    <ALIGNMENT>BOOLEAN</ALIGNMENT>
+                    <PREFIX-REF DEST="SECTION-NAME-PREFIX">/AUTOSAR_SD/BswImplementations/Sd_Impl/Sd_RC/Sd</PREFIX-REF>
+                    <SYMBOL>DATA</SYMBOL>
+                  </MEMORY-SECTION>
+                  <MEMORY-SECTION>
+                    <SHORT-NAME>VAR_NO_INIT_UNSPECIFIED</SHORT-NAME>
+                    <ALIGNMENT>NO_INIT_UNSPECIFIED</ALIGNMENT>
+                    <PREFIX-REF DEST="SECTION-NAME-PREFIX">/AUTOSAR_SD/BswImplementations/Sd_Impl/Sd_RC/Sd</PREFIX-REF>
+                    <SYMBOL>DATA</SYMBOL>
+                  </MEMORY-SECTION>
+                  <MEMORY-SECTION>
+                    <SHORT-NAME>VAR_NO_INIT_16</SHORT-NAME>
+                    <ALIGNMENT>16</ALIGNMENT>
+                    <PREFIX-REF DEST="SECTION-NAME-PREFIX">/AUTOSAR_SD/BswImplementations/Sd_Impl/Sd_RC/Sd</PREFIX-REF>
+                    <SYMBOL>DATA</SYMBOL>
+                  </MEMORY-SECTION>
+                  <MEMORY-SECTION>
+                    <SHORT-NAME>VAR_NO_INIT_32</SHORT-NAME>
+                    <ALIGNMENT>32</ALIGNMENT>
+                    <PREFIX-REF DEST="SECTION-NAME-PREFIX">/AUTOSAR_SD/BswImplementations/Sd_Impl/Sd_RC/Sd</PREFIX-REF>
+                    <SYMBOL>DATA</SYMBOL>
+                  </MEMORY-SECTION>
+                  <MEMORY-SECTION>
+                    <SHORT-NAME>CODE</SHORT-NAME>
+                    <ALIGNMENT>UNSPECIFIED</ALIGNMENT>
+                    <PREFIX-REF DEST="SECTION-NAME-PREFIX">/AUTOSAR_SD/BswImplementations/Sd_Impl/Sd_RC/Sd</PREFIX-REF>
+                    <SYMBOL>CODE</SYMBOL>
+                  </MEMORY-SECTION>
+                  <MEMORY-SECTION>
+                    <SHORT-NAME>VAR_NO_INIT_BOOLEAN</SHORT-NAME>
+                    <ALIGNMENT>BOOLEAN</ALIGNMENT>
+                    <PREFIX-REF DEST="SECTION-NAME-PREFIX">/AUTOSAR_SD/BswImplementations/Sd_Impl/Sd_RC/Sd</PREFIX-REF>
+                    <SYMBOL>DATA</SYMBOL>
+                  </MEMORY-SECTION>
+                  <MEMORY-SECTION>
+                    <SHORT-NAME>VAR_NO_INIT_8</SHORT-NAME>
+                    <ALIGNMENT>8</ALIGNMENT>
+                    <PREFIX-REF DEST="SECTION-NAME-PREFIX">/AUTOSAR_SD/BswImplementations/Sd_Impl/Sd_RC/Sd</PREFIX-REF>
+                    <SYMBOL>DATA</SYMBOL>
+                  </MEMORY-SECTION>
+                  <MEMORY-SECTION>
+                    <SHORT-NAME>VAR_INIT_BOOLEAN</SHORT-NAME>
+                    <ALIGNMENT>BOOLEAN</ALIGNMENT>
+                    <PREFIX-REF DEST="SECTION-NAME-PREFIX">/AUTOSAR_SD/BswImplementations/Sd_Impl/Sd_RC/Sd</PREFIX-REF>
+                    <SYMBOL>DATA</SYMBOL>
+                  </MEMORY-SECTION>
+                  <MEMORY-SECTION>
+                    <SHORT-NAME>CONST_BOOLEAN</SHORT-NAME>
+                    <ALIGNMENT>BOOLEAN</ALIGNMENT>
+                    <PREFIX-REF DEST="SECTION-NAME-PREFIX">/AUTOSAR_SD/BswImplementations/Sd_Impl/Sd_RC/Sd</PREFIX-REF>
+                    <SYMBOL>DATA</SYMBOL>
+                  </MEMORY-SECTION>
+                  <MEMORY-SECTION>
+                    <SHORT-NAME>VAR_CLEARED_8</SHORT-NAME>
+                    <ALIGNMENT>8</ALIGNMENT>
+                    <PREFIX-REF DEST="SECTION-NAME-PREFIX">/AUTOSAR_SD/BswImplementations/Sd_Impl/Sd_RC/Sd</PREFIX-REF>
+                    <SYMBOL>DATA</SYMBOL>
+                  </MEMORY-SECTION>
+                  <MEMORY-SECTION>
+                    <SHORT-NAME>VAR_CLEARED_16</SHORT-NAME>
+                    <ALIGNMENT>16</ALIGNMENT>
+                    <PREFIX-REF DEST="SECTION-NAME-PREFIX">/AUTOSAR_SD/BswImplementations/Sd_Impl/Sd_RC/Sd</PREFIX-REF>
+                    <SYMBOL>DATA</SYMBOL>
+                  </MEMORY-SECTION>
+                  <MEMORY-SECTION>
+                    <SHORT-NAME>VAR_CLEARED_32</SHORT-NAME>
+                    <ALIGNMENT>32</ALIGNMENT>
+                    <PREFIX-REF DEST="SECTION-NAME-PREFIX">/AUTOSAR_SD/BswImplementations/Sd_Impl/Sd_RC/Sd</PREFIX-REF>
+                    <SYMBOL>DATA</SYMBOL>
+                  </MEMORY-SECTION>
+                  <MEMORY-SECTION>
+                    <SHORT-NAME>VAR_CLEARED_UNSPECIFIED</SHORT-NAME>
+                    <ALIGNMENT>UNSPECIFIED</ALIGNMENT>
+                    <PREFIX-REF DEST="SECTION-NAME-PREFIX">/AUTOSAR_SD/BswImplementations/Sd_Impl/Sd_RC/Sd</PREFIX-REF>
+                    <SYMBOL>DATA</SYMBOL>
+                  </MEMORY-SECTION>
+                  <MEMORY-SECTION>
+                    <SHORT-NAME>VAR_INIT_8</SHORT-NAME>
+                    <ALIGNMENT>8</ALIGNMENT>
+                    <PREFIX-REF DEST="SECTION-NAME-PREFIX">/AUTOSAR_SD/BswImplementations/Sd_Impl/Sd_RC/Sd</PREFIX-REF>
+                    <SYMBOL>DATA</SYMBOL>
+                  </MEMORY-SECTION>
+                  <MEMORY-SECTION>
+                    <SHORT-NAME>VAR_INIT_16</SHORT-NAME>
+                    <ALIGNMENT>16</ALIGNMENT>
+                    <PREFIX-REF DEST="SECTION-NAME-PREFIX">/AUTOSAR_SD/BswImplementations/Sd_Impl/Sd_RC/Sd</PREFIX-REF>
+                    <SYMBOL>DATA</SYMBOL>
+                  </MEMORY-SECTION>
+                  <MEMORY-SECTION>
+                    <SHORT-NAME>VAR_INIT_32</SHORT-NAME>
+                    <ALIGNMENT>32</ALIGNMENT>
+                    <PREFIX-REF DEST="SECTION-NAME-PREFIX">/AUTOSAR_SD/BswImplementations/Sd_Impl/Sd_RC/Sd</PREFIX-REF>
+                    <SYMBOL>DATA</SYMBOL>
+                  </MEMORY-SECTION>
+                  <MEMORY-SECTION>
+                    <SHORT-NAME>VAR_INIT_UNSPECIFIED</SHORT-NAME>
+                    <ALIGNMENT>UNSPECIFIED</ALIGNMENT>
+                    <PREFIX-REF DEST="SECTION-NAME-PREFIX">/AUTOSAR_SD/BswImplementations/Sd_Impl/Sd_RC/Sd</PREFIX-REF>
+                    <SYMBOL>DATA</SYMBOL>
+                  </MEMORY-SECTION>
+                  <MEMORY-SECTION>
+                    <SHORT-NAME>CONST_BOOLEAN_UNSPECIFIED</SHORT-NAME>
+                    <ALIGNMENT>UNSPECIFIED</ALIGNMENT>
+                    <PREFIX-REF DEST="SECTION-NAME-PREFIX">/AUTOSAR_SD/BswImplementations/Sd_Impl/Sd_RC/Sd</PREFIX-REF>
+                    <SYMBOL>DATA</SYMBOL>
+                  </MEMORY-SECTION>
+                  <MEMORY-SECTION S="">
+                    <SHORT-NAME>CONST_8</SHORT-NAME>
+                    <ALIGNMENT>8</ALIGNMENT>
+                    <PREFIX-REF DEST="SECTION-NAME-PREFIX">/AUTOSAR_SD/BswImplementations/Sd_Impl/Sd_RC/Sd</PREFIX-REF>
+                    <SYMBOL>DATA</SYMBOL>
+                  </MEMORY-SECTION>
+                  <MEMORY-SECTION>
+                    <SHORT-NAME>CONST_16</SHORT-NAME>
+                    <ALIGNMENT>16</ALIGNMENT>
+                    <PREFIX-REF DEST="SECTION-NAME-PREFIX">/AUTOSAR_SD/BswImplementations/Sd_Impl/Sd_RC/Sd</PREFIX-REF>
+                    <SYMBOL>DATA</SYMBOL>
+                  </MEMORY-SECTION>
+                  <MEMORY-SECTION>
+                    <SHORT-NAME>DBTOC_CONFIG_CONST_UNSPECIFIED</SHORT-NAME>
+                    <ALIGNMENT>UNSPECIFIED</ALIGNMENT>
+                    <PREFIX-REF DEST="SECTION-NAME-PREFIX">/AUTOSAR_SD/BswImplementations/Sd_Impl/Sd_RC/Sd</PREFIX-REF>
+                    <SYMBOL>DATA</SYMBOL>
+                  </MEMORY-SECTION>
+                  <MEMORY-SECTION>
+                    <SHORT-NAME>CONST_UNSPECIFIED</SHORT-NAME>
+                    <ALIGNMENT>UNSPECIFIED</ALIGNMENT>
+                    <PREFIX-REF DEST="SECTION-NAME-PREFIX">/AUTOSAR_SD/BswImplementations/Sd_Impl/Sd_RC/Sd</PREFIX-REF>
+                    <SYMBOL>DATA</SYMBOL>
+                  </MEMORY-SECTION>
+                </MEMORY-SECTIONS>
+                <SECTION-NAME-PREFIXS>
+                  <SECTION-NAME-PREFIX>
+                    <SHORT-NAME>Sd</SHORT-NAME>
+                  </SECTION-NAME-PREFIX>
+                </SECTION-NAME-PREFIXS>
+                <STACK-USAGES>
+                  <MEASURED-STACK-USAGE>
+                    <SHORT-NAME>Sd_MainFunction_MSU</SHORT-NAME>
+                  </MEASURED-STACK-USAGE>
+                  <ROUGH-ESTIMATE-STACK-USAGE>
+                    <SHORT-NAME>Sd_MainFunction_RESU</SHORT-NAME>
+                  </ROUGH-ESTIMATE-STACK-USAGE>
+                  <WORST-CASE-STACK-USAGE>
+                    <SHORT-NAME>Sd_MainFunction_WCSU</SHORT-NAME>
+                  </WORST-CASE-STACK-USAGE>
+                </STACK-USAGES>
+              </RESOURCE-CONSUMPTION>
+              <SW-VERSION>0.3.0</SW-VERSION>
+              <VENDOR-ID>39</VENDOR-ID>
+              <AR-RELEASE-VERSION>4.10.0</AR-RELEASE-VERSION>
+              <BEHAVIOR-REF DEST="BSW-INTERNAL-BEHAVIOR">/AUTOSAR_SD/BswModuleDescriptions/Sd/Sd_IB</BEHAVIOR-REF>
+              <VENDOR-API-INFIX></VENDOR-API-INFIX>
+              <VENDOR-SPECIFIC-MODULE-DEF-REFS>
+                <VENDOR-SPECIFIC-MODULE-DEF-REF DEST="ECUC-MODULE-DEF">/AUTOSAR/EcucDefs/Sd</VENDOR-SPECIFIC-MODULE-DEF-REF>
+              </VENDOR-SPECIFIC-MODULE-DEF-REFS>
+            </BSW-IMPLEMENTATION>
+          </ELEMENTS>
+        </AR-PACKAGE>
+        <AR-PACKAGE>
+          <SHORT-NAME>ImplementationDataTypes</SHORT-NAME>
+          <ELEMENTS>
+            <IMPLEMENTATION-DATA-TYPE UUID="">
+              <SHORT-NAME>Sd_ServerServiceSetStateType</SHORT-NAME>
+              <CATEGORY>VALUE</CATEGORY>
+              <SW-DATA-DEF-PROPS>
+                <SW-DATA-DEF-PROPS-VARIANTS>
+                  <SW-DATA-DEF-PROPS-CONDITIONAL>
+                    <BASE-TYPE-REF DEST="SW-BASE-TYPE">/AUTOSAR_SD/BaseType/uint8</BASE-TYPE-REF>
+                    <SW-IMPL-POLICY>CONST</SW-IMPL-POLICY>
+                  </SW-DATA-DEF-PROPS-CONDITIONAL>
+                </SW-DATA-DEF-PROPS-VARIANTS>
+              </SW-DATA-DEF-PROPS>
+              <TYPE-EMITTER>Sd</TYPE-EMITTER>
+            </IMPLEMENTATION-DATA-TYPE>
+            <IMPLEMENTATION-DATA-TYPE>
+              <SHORT-NAME>Sd_ClientServiceSetStateType</SHORT-NAME>
+              <CATEGORY>VALUE</CATEGORY>
+              <SW-DATA-DEF-PROPS>
+                <SW-DATA-DEF-PROPS-VARIANTS>
+                  <SW-DATA-DEF-PROPS-CONDITIONAL>
+                    <BASE-TYPE-REF DEST="SW-BASE-TYPE">/AUTOSAR_SD/BaseType/uint8</BASE-TYPE-REF>
+                    <DISPLAY-FORMAT></DISPLAY-FORMAT>
+                    <SW-IMPL-POLICY>CONST</SW-IMPL-POLICY>
+                    <SW-INTERPOLATION-METHOD></SW-INTERPOLATION-METHOD>
+                  </SW-DATA-DEF-PROPS-CONDITIONAL>
+                </SW-DATA-DEF-PROPS-VARIANTS>
+              </SW-DATA-DEF-PROPS>
+              <TYPE-EMITTER>Sd</TYPE-EMITTER>
+            </IMPLEMENTATION-DATA-TYPE>
+            <IMPLEMENTATION-DATA-TYPE>
+              <SHORT-NAME>Sd_ConsumedEventGroupSetStateType</SHORT-NAME>
+              <CATEGORY>VALUE</CATEGORY>
+              <SW-DATA-DEF-PROPS>
+                <SW-DATA-DEF-PROPS-VARIANTS>
+                  <SW-DATA-DEF-PROPS-CONDITIONAL>
+                    <BASE-TYPE-REF DEST="SW-BASE-TYPE">/AUTOSAR_SD/BaseType/uint8</BASE-TYPE-REF>
+                    <SW-IMPL-POLICY>CONST</SW-IMPL-POLICY>
+                  </SW-DATA-DEF-PROPS-CONDITIONAL>
+                </SW-DATA-DEF-PROPS-VARIANTS>
+              </SW-DATA-DEF-PROPS>
+              <TYPE-EMITTER>Sd</TYPE-EMITTER>
+            </IMPLEMENTATION-DATA-TYPE>
+            <IMPLEMENTATION-DATA-TYPE>
+              <SHORT-NAME>Sd_ClientServiceCurrentStateType</SHORT-NAME>
+              <CATEGORY>VALUE</CATEGORY>
+              <SW-DATA-DEF-PROPS>
+                <SW-DATA-DEF-PROPS-VARIANTS>
+                  <SW-DATA-DEF-PROPS-CONDITIONAL>
+                    <BASE-TYPE-REF DEST="SW-BASE-TYPE">/AUTOSAR_SD/BaseType/uint8</BASE-TYPE-REF>
+                    <SW-IMPL-POLICY>CONST</SW-IMPL-POLICY>
+                    <ADDITIONAL-NATIVE-TYPE-QUALIFIER></ADDITIONAL-NATIVE-TYPE-QUALIFIER>
+                  </SW-DATA-DEF-PROPS-CONDITIONAL>
+                </SW-DATA-DEF-PROPS-VARIANTS>
+              </SW-DATA-DEF-PROPS>
+              <TYPE-EMITTER>Sd</TYPE-EMITTER>
+            </IMPLEMENTATION-DATA-TYPE>
+            <IMPLEMENTATION-DATA-TYPE>
+              <SHORT-NAME>Sd_ConsumedEventGroupCurrentStateType</SHORT-NAME>
+              <CATEGORY>VALUE</CATEGORY>
+              <SW-DATA-DEF-PROPS>
+                <SW-DATA-DEF-PROPS-VARIANTS>
+                  <SW-DATA-DEF-PROPS-CONDITIONAL>
+                    <BASE-TYPE-REF DEST="SW-BASE-TYPE">/AUTOSAR_SD/BaseType/uint8</BASE-TYPE-REF>
+                    <DISPLAY-FORMAT></DISPLAY-FORMAT>
+                    <SW-IMPL-POLICY>CONST</SW-IMPL-POLICY>
+                    <ADDITIONAL-NATIVE-TYPE-QUALIFIER></ADDITIONAL-NATIVE-TYPE-QUALIFIER>
+                    <SW-INTENDED-RESOLUTION></SW-INTENDED-RESOLUTION>
+                  </SW-DATA-DEF-PROPS-CONDITIONAL>
+                </SW-DATA-DEF-PROPS-VARIANTS>
+              </SW-DATA-DEF-PROPS>
+              <TYPE-EMITTER>Sd</TYPE-EMITTER>
+            </IMPLEMENTATION-DATA-TYPE>
+            <IMPLEMENTATION-DATA-TYPE>
+              <SHORT-NAME>Sd_EventHandlerCurrentStateType</SHORT-NAME>
+              <CATEGORY>VALUE</CATEGORY>
+              <SW-DATA-DEF-PROPS>
+                <SW-DATA-DEF-PROPS-VARIANTS>
+                  <SW-DATA-DEF-PROPS-CONDITIONAL>
+                    <BASE-TYPE-REF DEST="SW-BASE-TYPE">/AUTOSAR_SD/BaseType/uint8</BASE-TYPE-REF>
+                    <SW-IMPL-POLICY>CONST</SW-IMPL-POLICY>
+                    <ADDITIONAL-NATIVE-TYPE-QUALIFIER></ADDITIONAL-NATIVE-TYPE-QUALIFIER>
+                  </SW-DATA-DEF-PROPS-CONDITIONAL>
+                </SW-DATA-DEF-PROPS-VARIANTS>
+              </SW-DATA-DEF-PROPS>
+              <TYPE-EMITTER>Sd</TYPE-EMITTER>
+            </IMPLEMENTATION-DATA-TYPE>
+          </ELEMENTS>
+        </AR-PACKAGE>
+        <AR-PACKAGE>
+          <SHORT-NAME>BaseType</SHORT-NAME>
+          <ELEMENTS>
+            <SW-BASE-TYPE>
+              <SHORT-NAME>uint8</SHORT-NAME>
+              <BASE-TYPE-SIZE>8</BASE-TYPE-SIZE>
+              <BASE-TYPE-ENCODING>NONE</BASE-TYPE-ENCODING>
+              <BYTE-ORDER>MOST-SIGNIFICANT-BYTE-FIRST</BYTE-ORDER>
+              <NATIVE-DECLARATION>unsigned char</NATIVE-DECLARATION>
+            </SW-BASE-TYPE>
+          </ELEMENTS>
+        </AR-PACKAGE>
+      </AR-PACKAGES>
+    </AR-PACKAGE>
+  </AR-PACKAGES>
+</AUTOSAR>
