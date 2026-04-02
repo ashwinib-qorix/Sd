@@ -4309,8 +4309,6 @@ uint8 Sd_AcL_IP_Client_policy_Check(
     boolean LblUnicast)
 {
   Std_ReturnType LddReturnValue = E_OK;
-  Std_ReturnType LddRoutingTcp_Value = E_OK;
-  Std_ReturnType LddRoutingUdp_Value = E_OK;
   Sd_ProviderConsumerType Request_type = SD_PROVIDER_TYPE;
   boolean LblAclCheckTCP;
   boolean LblAclCheckUDP;
@@ -4444,15 +4442,15 @@ uint8 Sd_AcL_IP_Client_policy_Check(
 
                 if ((LucReturnCode2 == SD_TWO) || (LucReturnCode2 == SD_THREE))
                 {
-                  LddRoutingTcp_Value = Sd_AclTcpClientRouting(LpConsumedEvGrpStatic, LpClientServiceStatic, LpClientService, LpRemoteAddr,
-                                                               LucReturnCode2, LddTcpIndex);
+                  (void)Sd_AclTcpClientRouting(LpConsumedEvGrpStatic, LpClientServiceStatic, LpClientService, LpRemoteAddr,
+                                               LucReturnCode2, LddTcpIndex);
                 }
 
                 if ((LucReturnCode2 == SD_ONE) || (LucReturnCode2 == SD_THREE))
                 {
-                  LddRoutingUdp_Value = Sd_AclUdpClientRouting(LpConsumedEvGrpStatic, LpClientServiceStatic,
-                                                               LpClientService, LpRemoteAddr,
-                                                               LucReturnCode2, LddUdpIndex);
+                  (void)Sd_AclUdpClientRouting(LpConsumedEvGrpStatic, LpClientServiceStatic,
+                                               LpClientService, LpRemoteAddr,
+                                               LucReturnCode2, LddUdpIndex);
                 }
               }
             }
@@ -4489,15 +4487,15 @@ uint8 Sd_AcL_IP_Client_policy_Check(
 
                 if ((LucReturnCode2 == SD_TWO) || (LucReturnCode2 == SD_THREE))
                 {
-                  LddRoutingTcp_Value = Sd_AclTcpClientRouting(LpConsumedEvGrpStatic, LpClientServiceStatic, LpClientService, LpRemoteAddr,
-                                                               LucReturnCode2, LddTcpIndex);
+                  (void)Sd_AclTcpClientRouting(LpConsumedEvGrpStatic, LpClientServiceStatic, LpClientService, LpRemoteAddr,
+                                               LucReturnCode2, LddTcpIndex);
                 }
 
                 if ((LucReturnCode2 == SD_ONE) || (LucReturnCode2 == SD_THREE))
                 {
-                  LddRoutingUdp_Value = Sd_AclUdpClientRouting(LpConsumedEvGrpStatic, LpClientServiceStatic,
-                                                               LpClientService, LpRemoteAddr,
-                                                               LucReturnCode2, LddUdpIndex);
+                  (void)Sd_AclUdpClientRouting(LpConsumedEvGrpStatic, LpClientServiceStatic,
+                                               LpClientService, LpRemoteAddr,
+                                               LucReturnCode2, LddUdpIndex);
                 }
               }
             }
@@ -4519,32 +4517,21 @@ uint8 Sd_AcL_IP_Client_policy_Check(
   }
   else
   {
-    if (((!LddRoutingTcp_Value) && (!LddRoutingUdp_Value)))
-    {
-      (void)Sd_OfferRecd(LpInstance, LpInstanceStatic, LpEntryData,
-                         Sd_GaaRxOptionsData, LucTotalNoOfOptions, LpRemoteAddr, LblUnicast, LucReturnCode2);
-    }
-    else
-    {
-      LddEventReturnCode = SD_ZERO;
-      SD_UNUSED(LblUnicast);
-      SD_UNUSED(LpInstance);
-      SD_UNUSED(LucTotalNoOfOptions);
-    }
+    /* SWS_SD_00797: ACL check passed - send subscribe regardless of routing setup result.
+     * Routing group enabling may fail if socket is not yet ready, but the subscribe
+     * must still be sent so the server can accept the subscription. */
+    (void)Sd_OfferRecd(LpInstance, LpInstanceStatic, LpEntryData,
+                       Sd_GaaRxOptionsData, LucTotalNoOfOptions, LpRemoteAddr, LblUnicast, LucReturnCode2);
   }
   return (LddEventReturnCode);
 #else
   if (LucReturnCode2 != SD_ZERO)
   {
-    if (((!LddRoutingTcp_Value) && (!LddRoutingUdp_Value)))
-    {
-      (void)Sd_OfferRecd(LpInstance, LpInstanceStatic, LpEntryData,
-                         Sd_GaaRxOptionsData, LucTotalNoOfOptions, LpRemoteAddr, LblUnicast, LucReturnCode2);
-    }
-    else
-    {
-      LucReturnCode2 = SD_ZERO;
-    }
+    /* SWS_SD_00797: ACL check passed - send subscribe regardless of routing setup result.
+     * Routing group enabling may fail if socket is not yet ready, but the subscribe
+     * must still be sent so the server can accept the subscription. */
+    (void)Sd_OfferRecd(LpInstance, LpInstanceStatic, LpEntryData,
+                       Sd_GaaRxOptionsData, LucTotalNoOfOptions, LpRemoteAddr, LblUnicast, LucReturnCode2);
   }
 
   return (LucReturnCode2);

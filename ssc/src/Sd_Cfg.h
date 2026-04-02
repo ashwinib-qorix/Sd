@@ -61,7 +61,7 @@
     #define SD_SUBSCRIBE_EVENTGROUP_RETRY_ENABLE      STD_OFF
 	   
 	 /* Pre-compile option to check if Version  */
-	 #define SD_ENABLE_ACL_POLICY_CHECK                STD_OFF
+	 #define SD_ENABLE_ACL_POLICY_CHECK                STD_ON
 	  	 
 
     
