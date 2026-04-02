@@ -1897,6 +1897,27 @@ Std_ReturnType Sd_SubscribeRecdActions(
 
   LddReturnValue = E_OK;
 
+  /* SWS_SD_00797: Check ACL policy for incoming subscribe request */
+#if (STD_ON == SD_ENABLE_ACL_POLICY_CHECK)
+  if (SD_TRUE == Sd_GaaAclPolicyFlag)
+  {
+    /* LucReturnCode_ACL encoding:
+     * SD_ZERO  = No authorized endpoint found (ACL check failed)
+     * SD_ONE   = UDP endpoint authorized
+     * SD_TWO   = TCP endpoint authorized
+     * SD_THREE = Both TCP and UDP authorized */
+    if (SD_ZERO == LucReturnCode_ACL)
+    {
+      /* Remote subscriber not in AllowedConsumers list - Reject */
+#if (SD_ENABLE_SECURITY_EVENT_REPORTING == STD_ON)
+      (void)IdsM_SetSecurityEvent(SD_SEV_SOME_IP_ACL_CHECK_FAILED_EVENT_SUBSCRIPTION);
+#endif
+      LddReturnValue = E_NOT_OK;
+      return LddReturnValue;
+    }
+  }
+#endif
+
   LpEvHandlerSubGrp = &Sd_GaaEvHandlerSubGrp[SD_ZERO];
   LucReturnCode = Sd_GetIpAddrFromOptions(LpEntryData, LpOptionsData,
                                           LucTotalNoOfOptions, &LstIpAddrTcp, &LstIpAddrUdp);
@@ -3077,6 +3098,22 @@ Std_ReturnType Sd_OfferRecd(
   Sd_ClientServiceType *LpClientService;
 
   LddReturnValue = E_NOT_OK;
+
+  /* SWS_SD_00797: Check ACL policy for incoming offer - do not subscribe to unauthorized provider */
+#if (STD_ON == SD_ENABLE_ACL_POLICY_CHECK)
+  if (SD_TRUE == Sd_GaaAclPolicyFlag)
+  {
+    if (SD_ZERO == LucReturnCode_ACL)
+    {
+      /* Remote provider not in AllowedProviders list - Do not send Subscribe */
+#if (SD_ENABLE_SECURITY_EVENT_REPORTING == STD_ON)
+      (void)IdsM_SetSecurityEvent(SD_SEV_SOME_IP_ACL_CHECK_FAILED_OFFER);
+#endif
+      return LddReturnValue;
+    }
+  }
+#endif
+
   /*polyspace +4 RTE:NIV [Justified:Low] "Pointers with this orange flag are
    made sure that they are initialized with proper Value " */
   LusServiceId = (LpEntryData->unEntryData).stEntry1.usServiceId;
