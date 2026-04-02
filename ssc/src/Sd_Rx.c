@@ -1913,11 +1913,8 @@ Std_ReturnType Sd_SubscribeRecdActions(
       (void)IdsM_SetSecurityEvent(SD_SEV_SOME_IP_ACL_CHECK_FAILED_EVENT_SUBSCRIPTION);
 #endif
       LddReturnValue = E_NOT_OK;
+      return LddReturnValue;
     }
-  }
-  if (E_NOT_OK == LddReturnValue)
-  {
-    return LddReturnValue;
   }
 #endif
 

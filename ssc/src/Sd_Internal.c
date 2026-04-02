@@ -4517,9 +4517,11 @@ uint8 Sd_AcL_IP_Client_policy_Check(
   }
   else
   {
-    /* SWS_SD_00797: ACL check passed - send subscribe regardless of routing setup result.
-     * Routing group enabling may fail if socket is not yet ready, but the subscribe
-     * must still be sent so the server can accept the subscription. */
+    /* LucReturnCode2 != SD_ZERO (ACL check passed) or duplicate offer case:
+     * Proceed to send subscribe regardless of routing setup result.
+     * Routing group enabling (Sd_AclTcpClientRouting/Sd_AclUdpClientRouting) may fail
+     * if socket is not yet connection-ready, but the subscribe must still be sent
+     * so the server can accept the subscription. */
     (void)Sd_OfferRecd(LpInstance, LpInstanceStatic, LpEntryData,
                        Sd_GaaRxOptionsData, LucTotalNoOfOptions, LpRemoteAddr, LblUnicast, LucReturnCode2);
   }
@@ -4527,9 +4529,10 @@ uint8 Sd_AcL_IP_Client_policy_Check(
 #else
   if (LucReturnCode2 != SD_ZERO)
   {
-    /* SWS_SD_00797: ACL check passed - send subscribe regardless of routing setup result.
-     * Routing group enabling may fail if socket is not yet ready, but the subscribe
-     * must still be sent so the server can accept the subscription. */
+    /* ACL check passed (LucReturnCode2 != SD_ZERO) - proceed to send subscribe.
+     * Routing group enabling (Sd_AclTcpClientRouting/Sd_AclUdpClientRouting) may fail
+     * if socket is not yet connection-ready, but the subscribe must still be sent
+     * so the server can accept the subscription. */
     (void)Sd_OfferRecd(LpInstance, LpInstanceStatic, LpEntryData,
                        Sd_GaaRxOptionsData, LucTotalNoOfOptions, LpRemoteAddr, LblUnicast, LucReturnCode2);
   }
