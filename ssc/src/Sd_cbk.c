@@ -33,6 +33,7 @@
 ** Date         Changed By          Description                               **
 ********************************************************************************
 ** 07-Jul-2025  Gourav Purohit      Initial Release.                          **
+** 02-Apr-2026  Harshal Patil       Updated for Parasoft activity.            **
 **                                                                            **
 *******************************************************************************/
 /*******************************************************************************
@@ -56,6 +57,16 @@
 * memory map files for Code and Global data sections and configuration 
 * Specific macros present in .h, so this warning needs to be deviated ,so 
 * this warning needs to be deviated." */
+
+/* parasoft-begin-suppress CERT_C-DCL19-a-3 "Reason: Parasoft warnning is about
+* declare variables as locally as possible, but ISO C90 Coding guidelines  
+* suggest the variables are declared at the start of the function." */
+
+/* parasoft-begin-suppress CERT_C-DCL00-b-3 "Reason: This deviation is
+* for all the autosar API where signature change is not possible. Note:  
+* Has to be verified with AUTOSAR consortium, if standard inteface has issues 
+* having input variables as constant. Justification: Standard Autosar 
+* Interface provided cannot be tailored according to the violation" */
 
 /*******************************************************************************
 **                   MISRA-C:2012 violations Section                          **
@@ -362,7 +373,7 @@ void Sd_RxIndication(PduIdType RxPduId,
 
     LpInstanceStatic = &Sd_GaaInstanceStatic[LddInstanceIndex];
 #else
-    LpInstanceStatic = ((Sd_GpConfigPtr->pInstanceStatic) + LddInstanceIndex);
+    LpInstanceStatic = &(Sd_GpConfigPtr->pInstanceStatic[LddInstanceIndex]);
 #endif
 
     if (LpInstanceStatic->ddUnicastRxPduId == RxPduId)
@@ -404,7 +415,7 @@ void Sd_RxIndication(PduIdType RxPduId,
                                  LucNoOfOptions, LblUnicast, &LstRemoteAddr);
 
         LddRebootReturn = Sd_DetectReboot(LpInstanceStatic,
-                                          &LstRemoteAddr, LblUnicast, LusSessionId, LblRebootFlag);
+            &LstRemoteAddr, LblUnicast, LusSessionId, LblRebootFlag);
 
         if (E_OK != LddRebootReturn)
         {
@@ -417,7 +428,7 @@ void Sd_RxIndication(PduIdType RxPduId,
 
         LucNoOfEntries = (uint8)(LulLengthofEntry / (uint32)SD_SIXTEEN);
 
-        for (LusCount = SD_ZERO; LusCount < LucNoOfEntries; LusCount++)
+        for (LusCount = SD_ZERO; LusCount < (uint16) LucNoOfEntries; LusCount++)
         {
 
           LddEntryReturn = Sd_RxGetEntry(
@@ -557,7 +568,7 @@ void Sd_LocalIpAddrAssignmentChg(
 #if (STD_ON == SD_PRE_COMPILE_SINGLE)
         LpInstanceStatic = &Sd_GaaInstanceStatic[LusCount];
 #else
-      LpInstanceStatic = ((Sd_GpConfigPtr->pInstanceStatic) + LusCount);
+      LpInstanceStatic = &(Sd_GpConfigPtr->pInstanceStatic[LusCount]);
 #endif
 
         if (LpInstanceStatic->ddIpAddrSoConId == SoConId)
@@ -684,21 +695,28 @@ void Sd_SoConModeChg(
     SoAd_SoConIdType SoConId,
     SoAd_SoConModeType Mode)
 {
-  uint16 LusCount;
-  LusCount = SD_ZERO;
+    uint16 LusCount;
+    LusCount = SD_ZERO;
 
-  while (LusCount < SD_NO_OF_SOCKET_CONNECTIONS)
-  {
-    if (Sd_GaaSoConId[LusCount] == SoConId)
+    /* Validate Mode parameter before use */
+    if (Mode <= SOAD_SOCON_RECONNECT)
     {
-      SchM_Enter_Sd_MODE_STATUS_PROTECTION();
-      Sd_GaaSoCon[LusCount].ddSoaASoConMode = Mode;
-      SchM_Exit_Sd_MODE_STATUS_PROTECTION();
-
-      LusCount = SD_NO_OF_SOCKET_CONNECTIONS;
+        while (LusCount < SD_NO_OF_SOCKET_CONNECTIONS)
+        {
+            if (Sd_GaaSoConId[LusCount] == SoConId)
+            {
+                SchM_Enter_Sd_MODE_STATUS_PROTECTION();
+                Sd_GaaSoCon[LusCount].ddSoaASoConMode = Mode;
+                SchM_Exit_Sd_MODE_STATUS_PROTECTION();
+                LusCount = SD_NO_OF_SOCKET_CONNECTIONS;
+            }
+            LusCount++;
+        }
     }
-    LusCount++;
-  }
+    else
+    {
+        /* Handle invalid Mode value: could log error or ignore */
+    }
 }
 #define SD_STOP_SEC_CODE
 #include "Sd_MemMap.h"
@@ -710,6 +728,8 @@ void Sd_SoConModeChg(
 /* parasoft-end-suppress MISRAC2012-RULE_20_1-a-4 */
 /* parasoft-end-suppress MISRAC2012-RULE_5_4-c-2 */
 /* parasoft-end-suppress MISRAC2012-RULE_5_4-d-2 */
+/* parasoft-end-suppress CERT_C-DCL19-a-3 */
+/* parasoft-end-suppress CERT_C-DCL00-b-3 */
 
 /*******************************************************************************
 **                      End of File                                           **

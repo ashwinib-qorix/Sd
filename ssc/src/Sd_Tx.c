@@ -32,6 +32,7 @@
 ********************************************************************************
 ** Date         Changed By          Description                               **
 ********************************************************************************
+** 02-Apr-2026  Harshal Patil       Updated for Parasoft activity.            **
 ** 07-Jul-2025  Gourav Purohit      Initial Release.                          **
 **                                                                            **
 *******************************************************************************/
@@ -56,6 +57,21 @@
 * memory map files for Code and Global data sections and configuration 
 * Specific macros present in .h, so this warning needs to be deviated ,so 
 * this warning needs to be deviated." */
+
+/* parasoft-begin-suppress CERT_C-DCL19-a-3 "Reason: Parasoft warnning is about
+* declare variables as locally as possible, but ISO C90 Coding guidelines  
+* suggest the variables are declared at the start of the function." */
+
+/* #section Sd_Tx_c_Cert_REF_1
+* Violates CERT_C-API00-a-3: "Reason: This deviation is case to case 
+* for all the Parameters which are not validated before using in function."
+* "Justification: Validation is done in calling function or at the time of 
+* actual use in called function. */
+
+/* #section Sd_Tx_c_Cert_REF_2
+* Violates CERT_C-DCL00-b-3: "Reason: This deviation is case to case 
+* for all the parameters which needs to be declare constant. Justification: 
+* Parameters are passed to the functions which needs data as it is." */
 
 /*******************************************************************************
 **                   MISRA-C:2012 violations Section                          **
@@ -271,8 +287,58 @@
 *******************************************************************************/
 
 /*******************************************************************************
+**                      	Function Declarations                               **
+*******************************************************************************/
+#define SD_START_SEC_CODE
+#include "Sd_MemMap.h"
+static uint16 Sd_TransmitOption(
+  uint8 *LpSduDataPtr,
+    const Sd_OptionsRefType * const LpOptionsRef,
+    const uint8 ucSdInstanceIndex);
+#define SD_STOP_SEC_CODE
+#include "Sd_MemMap.h"
+
+#define SD_START_SEC_CODE
+#include "Sd_MemMap.h"
+static void Sd_TransmitEntry(
+  uint8 * const LpSduDataPtr,
+  const Sd_EntryType * const LpEntry);
+#define SD_STOP_SEC_CODE
+#include "Sd_MemMap.h"
+
+#define SD_START_SEC_CODE
+#include "Sd_MemMap.h"
+static uint16 Sd_SocketAddrHtonlConversion (uint8 *LpSduDataPtr,
+                                const Sd_OptionsRefType * const LpOptionsRef,
+                                const TcpIp_SockAddrType LstIpv6Addr);
+#define SD_STOP_SEC_CODE
+#include "Sd_MemMap.h"
+
+#define SD_START_SEC_CODE
+#include "Sd_MemMap.h"
+static void Sd_TxCreatePdu(
+  const uint16 * const LpQueueIndex,
+  const uint16 LusNoOfSendQueue,
+  const uint8 LucSdInstanceIndex,
+  const uint8 LucNoOfOptionsTx);
+#define SD_STOP_SEC_CODE
+#include "Sd_MemMap.h"
+
+#define SD_START_SEC_CODE
+#include "Sd_MemMap.h"
+static void Sd_CheckOptionMatch(
+  const Sd_TypeOfOptionsType * const LenTypeOfOption, 
+  const SoAd_SoConIdType * const LddSoConId1, 
+  const uint8 * const LucSoCon1Protocol, 
+  const uint8 * const LpNoOfOptionsTx, 
+  boolean *LblMatch, uint16 *LusMatchIndex);
+#define SD_STOP_SEC_CODE
+#include "Sd_MemMap.h"
+
+/*******************************************************************************
 **                      	Function Definitions                          **
 *******************************************************************************/
+                                
 /*******************************************************************************
 ** Function Name        : Sd_AddToQueue                                       **
 **                                                                            **
@@ -305,44 +371,57 @@
 *******************************************************************************/
 #define SD_START_SEC_CODE
 #include "Sd_MemMap.h"
+/* parasoft-begin-suppress CERT_C-API00-a-3 
+"Reason: Sd_Tx_c_Cert_REF_1" */
+/* parasoft-begin-suppress CERT_C-DCL00-b-3 
+  "Reason: Sd_Tx_c_Cert_REF_2" */
 static void Sd_AddToQueue(
-    const Sd_QueueType * LpQueueElement)
+  const Sd_QueueType * LpQueueElement)
+/* parasoft-end-suppress CERT_C-API00-a-3 */
+/* parasoft-end-suppress CERT_C-DCL00-b-3 */
 {
   uint16 LusCount;
   boolean LblBreak;
   uint16 LusCurrIndex;
-  /* SWS_SD_00651a
-     SWS_SD_00651b */
-  LblBreak = FALSE;
+  boolean LblParamValid = SD_TRUE;
   LusCurrIndex = SD_ZERO;
+  if (SD_NULL_PTR == LpQueueElement)
+  {
+    LblParamValid = SD_FALSE;
+  }
+
+  if (LblParamValid == SD_TRUE)
+  {
+    LblBreak = FALSE;
 #if (SD_QUEUE_SIZE != SD_ONE)
-  for (LusCount = SD_ZERO; ((LusCount < SD_QUEUE_SIZE) && (SD_FALSE == LblBreak));
-       LusCount++)
+    for (LusCount = SD_ZERO; ((LusCount < SD_QUEUE_SIZE) && (SD_FALSE == LblBreak));
+         LusCount++)
 #else
-  LusCount = SD_ZERO;
+    LusCount = SD_ZERO;
 #endif
-  {
-    SchM_Enter_Sd_MODE_STATUS_PROTECTION();
-    if (SD_QUEUE_EMPTY == Sd_GaaQueueStatus[LusCount])
     {
-      LusCurrIndex = LusCount;
-      LblBreak = SD_TRUE;
+      SchM_Enter_Sd_MODE_STATUS_PROTECTION();
+      if (SD_QUEUE_EMPTY == Sd_GaaQueueStatus[LusCount])
+      {
+        LusCurrIndex = LusCount;
+        LblBreak = SD_TRUE;
+      }
+      SchM_Exit_Sd_MODE_STATUS_PROTECTION();
     }
-    SchM_Exit_Sd_MODE_STATUS_PROTECTION();
-  }
 
-  if (SD_FALSE == LblBreak)
-  {
+    if (SD_FALSE == LblBreak)
+    {
+      /* No available slot in queue */
+    }
+    else
+    {
+      SchM_Enter_Sd_MODE_STATUS_PROTECTION();
+      Sd_MemCpy(&Sd_GaaQueue[LusCurrIndex], LpQueueElement);
+      Sd_GaaQueueStatus[LusCurrIndex] = SD_QUEUE_FULL;
+      SchM_Exit_Sd_MODE_STATUS_PROTECTION();
+    }
   }
-  else
-  {
-
-    SchM_Enter_Sd_MODE_STATUS_PROTECTION();
-    Sd_MemCpy(&Sd_GaaQueue[LusCurrIndex], LpQueueElement);
-    Sd_GaaQueueStatus[LusCurrIndex] = SD_QUEUE_FULL;
-    SchM_Exit_Sd_MODE_STATUS_PROTECTION();
-  }
-  return;
+  /* Single exit at end, no return for void */
 }
 #define SD_STOP_SEC_CODE
 #include "Sd_MemMap.h"
@@ -386,88 +465,102 @@ static void Sd_AddToQueue(
 #if (STD_ON == SD_SERVER_CONFIGURED)
 #define SD_START_SEC_CODE
 #include "Sd_MemMap.h"
+/* parasoft-begin-suppress CERT_C-API00-a-3 
+"Reason: Sd_Tx_c_Cert_REF_1" */
+/* parasoft-begin-suppress CERT_C-DCL00-b-3 
+  "Reason: Sd_Tx_c_Cert_REF_2" */
 void Sd_SendOffer(
-    const Sd_ServerServiceStaticType * LpServerServiceStatic,
-    const TcpIp_SockAddrType * LpSendAddr,
-    uint32 LulDelay,
-    boolean blSendUnicast)
+  const Sd_ServerServiceStaticType * LpServerServiceStatic,
+  const TcpIp_SockAddrType * LpSendAddr,
+  const uint32 LulDelay,
+  const boolean blSendUnicast)
+/* parasoft-end-suppress CERT_C-API00-a-3 */
+/* parasoft-end-suppress CERT_C-DCL00-b-3 */
 {
   Sd_QueueType LstQueueElement;
   Sd_QueueType *LpQueueElement;
   Sd_Entry1DataType *LpEntry1;
   uint8 LusCount;
-  LpQueueElement = &LstQueueElement;
-  (LpQueueElement->stEntryData).enTypeOfEntry = SD_OFFER_SERVICE_ENTRY;
+  boolean LblParamValid = SD_TRUE;
 
-  LpEntry1 = &((LpQueueElement->stEntryData).unEntryData.stEntry1);
-  /* SWS_SD_00254
-     SWS_SD_00294 */
-  LpEntry1->ucEntryType = SD_ENTRY_TYPE_OFFER;
+  if (SD_NULL_PTR == LpServerServiceStatic)
+  {
+    /* Parasoft compliance: pointer parameter validation */
+    LblParamValid = SD_FALSE;
+  }
 
-  LpEntry1->ucIndex1 = SD_ZERO;
-  LpEntry1->ucIndex2 = SD_ZERO;
-  LpEntry1->ucNoOfOptions1 = SD_ZERO;
-  LpEntry1->ucNoOfOptions2 = SD_ZERO;
-/* SWS_SD_00509
-   SWS_SD_00175 */
+  if (LblParamValid == SD_TRUE)
+  {
+    LpQueueElement = &LstQueueElement;
+    (LpQueueElement->stEntryData).enTypeOfEntry = SD_OFFER_SERVICE_ENTRY;
+
+    LpEntry1 = &((LpQueueElement->stEntryData).unEntryData.stEntry1);
+    /* SWS_SD_00254
+       SWS_SD_00294 */
+    LpEntry1->ucEntryType = SD_ENTRY_TYPE_OFFER;
+
+    LpEntry1->ucIndex1 = SD_ZERO;
+    LpEntry1->ucIndex2 = SD_ZERO;
+    LpEntry1->ucNoOfOptions1 = SD_ZERO;
+    LpEntry1->ucNoOfOptions2 = SD_ZERO;
+    /* SWS_SD_00509
+       SWS_SD_00175 */
 #if (STD_OFF == SD_PRE_COMPILE_SINGLE)
-  LpEntry1->usServiceId = LpServerServiceStatic->usServiceId;
-  /* SWS_SD_00510 */
-  LpEntry1->usInstanceId = LpServerServiceStatic->usInstanceId;
-  /* SWS_SD_00511 */
-  LpEntry1->ucMajorVersion = LpServerServiceStatic->ucMajorVersion;
-  /* SWS_SD_00512 */
-  LpEntry1->ulMinorVersion = LpServerServiceStatic->ulMinorVersion;
-  /* SWS_SD_00513 */
-  LpEntry1->ulTtlsec =
-      LpServerServiceStatic->pServerTimer->ulServerTimerTtlsec;
+    LpEntry1->usServiceId = LpServerServiceStatic->usServiceId;
+    /* SWS_SD_00510 */
+    LpEntry1->usInstanceId = LpServerServiceStatic->usInstanceId;
+    /* SWS_SD_00511 */
+    LpEntry1->ucMajorVersion = LpServerServiceStatic->ucMajorVersion;
+    /* SWS_SD_00512 */
+    LpEntry1->ulMinorVersion = LpServerServiceStatic->ulMinorVersion;
+    /* SWS_SD_00513 */
+    LpEntry1->ulTtlsec =
+        LpServerServiceStatic->pServerTimer->ulServerTimerTtlsec;
 
-  LpQueueElement->ucSdInstanceIndex =
-      LpServerServiceStatic->ucSdInstanceIndex;
-  LpQueueElement->ddGenericIndex =
-      LpServerServiceStatic->usServerSelfIndex;
-
+    LpQueueElement->ucSdInstanceIndex =
+        LpServerServiceStatic->ucSdInstanceIndex;
+    LpQueueElement->ddGenericIndex =
+        LpServerServiceStatic->usServerSelfIndex;
 #else
-  LpEntry1->usServiceId = LpServerServiceStatic->usServiceId;
-  /* SWS_SD_00510 */
-  LpEntry1->usInstanceId = LpServerServiceStatic->usInstanceId;
-  /* SWS_SD_00511 */
-  LpEntry1->ucMajorVersion = LpServerServiceStatic->ucMajorVersion;
-  /* SWS_SD_00512 */
-  LpEntry1->ulMinorVersion = LpServerServiceStatic->ulMinorVersion;
-  /* SWS_SD_00513 */
-  LpEntry1->ulTtlsec =
-      LpServerServiceStatic->pServerTimer->ulServerTimerTtlsec;
+    LpEntry1->usServiceId = LpServerServiceStatic->usServiceId;
+    /* SWS_SD_00510 */
+    LpEntry1->usInstanceId = LpServerServiceStatic->usInstanceId;
+    /* SWS_SD_00511 */
+    LpEntry1->ucMajorVersion = LpServerServiceStatic->ucMajorVersion;
+    /* SWS_SD_00512 */
+    LpEntry1->ulMinorVersion = LpServerServiceStatic->ulMinorVersion;
+    /* SWS_SD_00513 */
+    LpEntry1->ulTtlsec =
+        LpServerServiceStatic->pServerTimer->ulServerTimerTtlsec;
 
-  LpQueueElement->ucSdInstanceIndex =
-      LpServerServiceStatic->ucSdInstanceIndex;
-  LpQueueElement->ddGenericIndex = LpServerServiceStatic->usServerSelfIndex;
+    LpQueueElement->ucSdInstanceIndex =
+        LpServerServiceStatic->ucSdInstanceIndex;
+    LpQueueElement->ddGenericIndex = LpServerServiceStatic->usServerSelfIndex;
 #endif
 
-  LpQueueElement->ulDelayCount = LulDelay;
+    LpQueueElement->ulDelayCount = LulDelay;
 
-  LpQueueElement->blSendUnicast = blSendUnicast;
-  LpQueueElement->ddSoConIdUdp = SD_ZERO;
-  LpQueueElement->ddSoConIdTcp = SD_ZERO;
+    LpQueueElement->blSendUnicast = blSendUnicast;
+    LpQueueElement->ddSoConIdUdp = SD_ZERO;
+    LpQueueElement->ddSoConIdTcp = SD_ZERO;
 #if (SD_IPV6_ENABLED == STD_OFF)
-  LpQueueElement->stSendAddr.domain = TCPIP_AF_INET;
-
+    LpQueueElement->stSendAddr.domain = TCPIP_AF_INET;
 #else
-
-  LpQueueElement->stSendAddr.domain = TCPIP_AF_INET6;
-
+    LpQueueElement->stSendAddr.domain = TCPIP_AF_INET6;
 #endif
-  /* Design ID : SD_SDD_0333 ,SD_SDD_0453 ,SD_SDD_0332 ,SD_SDD_0455 ,SD_SDD_0127 , SD_SDD_0329 , SD_SDD_0464 */
-  for (LusCount = SD_ZERO; LusCount < SD_EIGHTTEEN; LusCount++)
-  {
-    LpQueueElement->stSendAddr.aaSockAddrInetData[LusCount] = SD_WILDCARD_ADDR;
-  }
+    /* Design ID : SD_SDD_0333 ,SD_SDD_0453 ,SD_SDD_0332 ,SD_SDD_0455 ,SD_SDD_0127 , SD_SDD_0329 , SD_SDD_0464 */
+    for (LusCount = SD_ZERO; LusCount < SD_EIGHTTEEN; LusCount++)
+    {
+      LpQueueElement->stSendAddr.aaSockAddrInetData[LusCount] = SD_WILDCARD_ADDR;
+    }
 
-  if (SD_TRUE == blSendUnicast)
-  {
-    Sd_CopyIpAddr(&(LpQueueElement->stSendAddr), LpSendAddr);
+    if ((SD_TRUE == blSendUnicast) && (SD_NULL_PTR != LpSendAddr))
+    {
+      Sd_CopyIpAddr(&(LpQueueElement->stSendAddr), LpSendAddr);
+    }
+    Sd_AddToQueue(LpQueueElement);
   }
-  Sd_AddToQueue(LpQueueElement);
+  /* Single exit at end, no return for void */
 }
 #define SD_STOP_SEC_CODE
 #include "Sd_MemMap.h"
@@ -505,43 +598,59 @@ void Sd_SendOffer(
 #if (STD_ON == SD_SERVER_CONFIGURED)
 #define SD_START_SEC_CODE
 #include "Sd_MemMap.h"
+/* parasoft-begin-suppress CERT_C-API00-a-3 
+"Reason: Sd_Tx_c_Cert_REF_1" */
+/* parasoft-begin-suppress CERT_C-DCL00-b-3 
+  "Reason: Sd_Tx_c_Cert_REF_2" */
 void Sd_SendStopOffer(
-    const Sd_ServerServiceStaticType * LpServerServiceStatic,
-    uint32 LulDelay)
+  const Sd_ServerServiceStaticType * LpServerServiceStatic,
+  const uint32 LulDelay)
+/* parasoft-end-suppress CERT_C-API00-a-3 */
+/* parasoft-end-suppress CERT_C-DCL00-b-3 */
 {
   Sd_QueueType LstQueueElement;
   Sd_QueueType *LpQueueElement;
   Sd_Entry1DataType *LpEntry1;
+  /* Parameter validation for Parasoft CERT_C-API00-a-3 */
+  boolean LblParamValid = SD_TRUE;
+  if (SD_NULL_PTR == LpServerServiceStatic)
+  {
+    /* Parasoft compliance: pointer parameter validation */
+    LblParamValid = SD_FALSE;
+  }
+  if (LblParamValid == SD_TRUE)
+  {
+    LpQueueElement = &LstQueueElement;
 
-  LpQueueElement = &LstQueueElement;
+    (LpQueueElement->stEntryData).enTypeOfEntry = SD_STOP_OFFER_SERVICE_ENTRY;
+    LpEntry1 = &((LpQueueElement->stEntryData).unEntryData.stEntry1);
+    /* SWS_SD_00423 SWS_SD_00422 SWS_SD_00294 */
+    LpEntry1->ucEntryType = SD_ENTRY_TYPE_STOP_OFFER;
 
-  (LpQueueElement->stEntryData).enTypeOfEntry = SD_STOP_OFFER_SERVICE_ENTRY;
-  LpEntry1 = &((LpQueueElement->stEntryData).unEntryData.stEntry1);
-  /* SWS_SD_00423 SWS_SD_00422 SWS_SD_00294 */
-  LpEntry1->ucEntryType = SD_ENTRY_TYPE_STOP_OFFER;
+    LpEntry1->ucIndex1 = SD_ZERO;
+    LpEntry1->ucIndex2 = SD_ZERO;
+    LpEntry1->ucNoOfOptions1 = SD_ZERO;
+    LpEntry1->ucNoOfOptions2 = SD_ZERO;
+    /* SWS_SD_00424
+       SWS_SD_00178
+       SWS_SD_00182*/
 
-  LpEntry1->ucIndex1 = SD_ZERO;
-  LpEntry1->ucIndex2 = SD_ZERO;
-  LpEntry1->ucNoOfOptions1 = SD_ZERO;
-  LpEntry1->ucNoOfOptions2 = SD_ZERO;
-  /* SWS_SD_00424
-     SWS_SD_00178
-   SWS_SD_00182*/
+    LpEntry1->usServiceId = LpServerServiceStatic->usServiceId;
+    LpEntry1->usInstanceId = LpServerServiceStatic->usInstanceId;
+    LpEntry1->ucMajorVersion = LpServerServiceStatic->ucMajorVersion;
+    LpEntry1->ulMinorVersion = LpServerServiceStatic->ulMinorVersion;
+    /* SWS_SD_00425  */
+    LpEntry1->ulTtlsec = (uint32)SD_ZERO;
 
-  LpEntry1->usServiceId = LpServerServiceStatic->usServiceId;
-  LpEntry1->usInstanceId = LpServerServiceStatic->usInstanceId;
-  LpEntry1->ucMajorVersion = LpServerServiceStatic->ucMajorVersion;
-  LpEntry1->ulMinorVersion = LpServerServiceStatic->ulMinorVersion;
-  /* SWS_SD_00425  */
-  LpEntry1->ulTtlsec = (uint32)SD_ZERO;
+    LpQueueElement->ucSdInstanceIndex =
+        LpServerServiceStatic->ucSdInstanceIndex;
+    LpQueueElement->ddGenericIndex = LpServerServiceStatic->usServerSelfIndex;
 
-  LpQueueElement->ucSdInstanceIndex =
-      LpServerServiceStatic->ucSdInstanceIndex;
-  LpQueueElement->ddGenericIndex = LpServerServiceStatic->usServerSelfIndex;
-
-  LpQueueElement->ulDelayCount = LulDelay;
-  LpQueueElement->blSendUnicast = FALSE;
-  Sd_AddToQueue(LpQueueElement);
+    LpQueueElement->ulDelayCount = LulDelay;
+    LpQueueElement->blSendUnicast = FALSE;
+    Sd_AddToQueue(LpQueueElement);
+  }
+  /* Single exit at end, no return for void */
 }
 #define SD_STOP_SEC_CODE
 #include "Sd_MemMap.h"
@@ -584,62 +693,79 @@ void Sd_SendStopOffer(
 #if (STD_ON == SD_EV_HANDLER_CONFIGURED)
 #define SD_START_SEC_CODE
 #include "Sd_MemMap.h"
+/* parasoft-begin-suppress CERT_C-API00-a-3 
+"Reason: Sd_Tx_c_Cert_REF_1" */
+/* parasoft-begin-suppress CERT_C-DCL00-b-3 
+  "Reason: Sd_Tx_c_Cert_REF_2" */
 void Sd_SendSubscribeAck(
-    const Sd_EvHandlerStaticType * LpEvHandlerStatic,
-    const Sd_EntryType * LpEntryData,
-    const TcpIp_SockAddrType * LpSendAddr,
-    uint32 LulDelay)
+  const Sd_EvHandlerStaticType * LpEvHandlerStatic,
+  const Sd_EntryType * LpEntryData,
+  const TcpIp_SockAddrType * LpSendAddr,
+  const uint32 LulDelay)
+/* parasoft-end-suppress CERT_C-API00-a-3 */
+/* parasoft-end-suppress CERT_C-DCL00-b-3 */
 {
   Sd_Entry2DataType const *LpEntry2Input;
   Sd_Entry2DataType *LpEntry2;
   Sd_QueueType LstQueueElement;
   Sd_QueueType *LpQueueElement;
   Sd_ServerServiceStaticType const *LpServerServiceStatic;
+  /* Parameter validation for Parasoft CERT_C-API00-a-3 */
+  boolean LblParamValid = SD_TRUE;
+  if ((SD_NULL_PTR == LpEvHandlerStatic) || (SD_NULL_PTR == LpEntryData) || (SD_NULL_PTR == LpSendAddr))
+  {
+    /* Parasoft compliance: pointer parameter validation */
+    LblParamValid = SD_FALSE;
+  }
+  if (LblParamValid == SD_TRUE)
+  {
+    LpQueueElement = &LstQueueElement;
 
-  LpQueueElement = &LstQueueElement;
-
-  (LpQueueElement->stEntryData).enTypeOfEntry = SD_SUBSCRIBE_ACK_ENTRY;
-  LpEntry2 = &((LpQueueElement->stEntryData).unEntryData.stEntry2);
-  LpEntry2Input = &((LpEntryData->unEntryData).stEntry2);
+    (LpQueueElement->stEntryData).enTypeOfEntry = SD_SUBSCRIBE_ACK_ENTRY;
+    LpEntry2 = &((LpQueueElement->stEntryData).unEntryData.stEntry2);
+    LpEntry2Input = &((LpEntryData->unEntryData).stEntry2);
 
 #if (STD_ON == SD_PRE_COMPILE_SINGLE)
-  LpServerServiceStatic = &Sd_GaaServerServiceStatic[LpEvHandlerStatic->usServerServiceIndex];
+    LpServerServiceStatic = &Sd_GaaServerServiceStatic[LpEvHandlerStatic->usServerServiceIndex];
 #else
-  LpServerServiceStatic = ((Sd_GpConfigPtr->pSd_GaaServerServiceStatic) + LpEvHandlerStatic->usServerServiceIndex);
+    LpServerServiceStatic = &(Sd_GpConfigPtr->pSd_GaaServerServiceStatic
+      [LpEvHandlerStatic->usServerServiceIndex]);
 #endif
 
-  /* SWS_SD_00314
-     SWS_SD_00428*/
-  LpEntry2->ucEntryType = SD_ENTRY_TYPE_SUBSCRIBE_ACK;
-  LpEntry2->ucIndex1 = SD_ZERO;
-  LpEntry2->ucIndex2 = SD_ZERO;
-  LpEntry2->ucNoOfOptions1 = SD_ZERO;
-  LpEntry2->ucNoOfOptions2 = SD_ZERO;
-  /* SWS_SD_00428
-     SWS_SD_00693b */
-  LpEntry2->usServiceId = LpEntry2Input->usServiceId;
-  LpEntry2->usInstanceId = LpEntry2Input->usInstanceId;
-  LpEntry2->ucMajorVersion = LpEntry2Input->ucMajorVersion;
-  /*polyspace +4 RTE:NIV [Justified:Low] "Pointers with this orange flag are
-      made sure that they are initialized with proper Value " */
-  LpEntry2->usReserved = LpEntry2Input->usReserved;
-  LpEntry2->ucCounter = LpEntry2Input->ucCounter;
-  LpEntry2->usEventGroupId = LpEntry2Input->usEventGroupId;
-  /*SWS_SD_00315*/
-  LpEntry2->ulTtlsec = LpEntry2Input->ulTtlsec;
+    /* SWS_SD_00314
+       SWS_SD_00428*/
+    LpEntry2->ucEntryType = SD_ENTRY_TYPE_SUBSCRIBE_ACK;
+    LpEntry2->ucIndex1 = SD_ZERO;
+    LpEntry2->ucIndex2 = SD_ZERO;
+    LpEntry2->ucNoOfOptions1 = SD_ZERO;
+    LpEntry2->ucNoOfOptions2 = SD_ZERO;
+    /* SWS_SD_00428
+       SWS_SD_00693b */
+    LpEntry2->usServiceId = LpEntry2Input->usServiceId;
+    LpEntry2->usInstanceId = LpEntry2Input->usInstanceId;
+    LpEntry2->ucMajorVersion = LpEntry2Input->ucMajorVersion;
+    /*polyspace +4 RTE:NIV [Justified:Low] "Pointers with this orange flag are
+        made sure that they are initialized with proper Value " */
+    LpEntry2->usReserved = LpEntry2Input->usReserved;
+    LpEntry2->ucCounter = LpEntry2Input->ucCounter;
+    LpEntry2->usEventGroupId = LpEntry2Input->usEventGroupId;
+    /*SWS_SD_00315*/
+    LpEntry2->ulTtlsec = LpEntry2Input->ulTtlsec;
 
-  LpQueueElement->ucSdInstanceIndex =
-      LpServerServiceStatic->ucSdInstanceIndex;
+    LpQueueElement->ucSdInstanceIndex =
+        LpServerServiceStatic->ucSdInstanceIndex;
 
-  LpQueueElement->ddGenericIndex = LpEvHandlerStatic->usEvHandlerSelfIndex;
+    LpQueueElement->ddGenericIndex = LpEvHandlerStatic->usEvHandlerSelfIndex;
 
-  LpQueueElement->ulDelayCount = LulDelay;
+    LpQueueElement->ulDelayCount = LulDelay;
 
-  LpQueueElement->blSendUnicast = SD_TRUE;
+    LpQueueElement->blSendUnicast = SD_TRUE;
 
-  Sd_CopyIpAddr(&(LpQueueElement->stSendAddr), LpSendAddr);
+    Sd_CopyIpAddr(&(LpQueueElement->stSendAddr), LpSendAddr);
 
-  Sd_AddToQueue(LpQueueElement);
+    Sd_AddToQueue(LpQueueElement);
+  }
+  /* Single exit at end, no return for void */
 }
 #define SD_STOP_SEC_CODE
 #include "Sd_MemMap.h"
@@ -681,57 +807,73 @@ void Sd_SendSubscribeAck(
 *******************************************************************************/
 #define SD_START_SEC_CODE
 #include "Sd_MemMap.h"
+/* parasoft-begin-suppress CERT_C-API00-a-3 
+"Reason: Sd_Tx_c_Cert_REF_1" */
+/* parasoft-begin-suppress CERT_C-DCL00-b-3 
+  "Reason: Sd_Tx_c_Cert_REF_2" */
 void Sd_SendSubscribeNack(
-    const Sd_InstanceStaticType * LpInstanceStatic,
-    const Sd_EntryType * LpEntryData,
-    const TcpIp_SockAddrType * LpSendAddr,
-    uint32 LulDelay)
+  const Sd_InstanceStaticType * LpInstanceStatic,
+  const Sd_EntryType * LpEntryData,
+  const TcpIp_SockAddrType * LpSendAddr,
+  const uint32 LulDelay)
+/* parasoft-end-suppress CERT_C-API00-a-3 */
+/* parasoft-end-suppress CERT_C-DCL00-b-3 */
 {
   Sd_Entry2DataType const *LpEntry2Input;
   Sd_Entry2DataType *LpEntry2;
   Sd_QueueType LstQueueElement;
   Sd_QueueType *LpQueueElement;
+  /* Parameter validation for Parasoft CERT_C-API00-a-3 */
+  boolean LblParamValid = SD_TRUE;
+  if ((SD_NULL_PTR == LpInstanceStatic) || (SD_NULL_PTR == LpEntryData) || (SD_NULL_PTR == LpSendAddr))
+  {
+    /* Parasoft compliance: pointer parameter validation */
+    LblParamValid = SD_FALSE;
+  }
+  if (LblParamValid == SD_TRUE)
+  {
+    LpQueueElement = &LstQueueElement;
 
-  LpQueueElement = &LstQueueElement;
+    (LpQueueElement->stEntryData).enTypeOfEntry = SD_SUBSCRIBE_NACK_ENTRY;
 
-  (LpQueueElement->stEntryData).enTypeOfEntry = SD_SUBSCRIBE_NACK_ENTRY;
+    LpEntry2 = &((LpQueueElement->stEntryData).unEntryData.stEntry2);
 
-  LpEntry2 = &((LpQueueElement->stEntryData).unEntryData.stEntry2);
+    LpEntry2Input = &((LpEntryData->unEntryData).stEntry2);
+    /* SWS_SD_00316
+       SWS_SD_00290 */
+    LpEntry2->ucEntryType = SD_ENTRY_TYPE_SUBSCRIBE_NACK;
 
-  LpEntry2Input = &((LpEntryData->unEntryData).stEntry2);
-  /* SWS_SD_00316
-     SWS_SD_00290 */
-  LpEntry2->ucEntryType = SD_ENTRY_TYPE_SUBSCRIBE_NACK;
+    LpEntry2->ucIndex1 = SD_ZERO;
+    LpEntry2->ucIndex2 = SD_ZERO;
+    LpEntry2->ucNoOfOptions1 = SD_ZERO;
+    LpEntry2->ucNoOfOptions2 = SD_ZERO;
+    /* SWS_SD_00431  */
+    LpEntry2->usServiceId = LpEntry2Input->usServiceId;
+    /*polyspace +4 RTE:NIV [Justified:Low] "Pointers with this orange flag are
+        made sure that they are initialized with proper Value " */
+    LpEntry2->usInstanceId = LpEntry2Input->usInstanceId;
+    LpEntry2->ucMajorVersion = LpEntry2Input->ucMajorVersion;
+    /*polyspace +4 RTE:NIV [Justified:Low] "Pointers with this orange flag are
+        made sure that they are initialized with proper Value " */
+    LpEntry2->usReserved = LpEntry2Input->usReserved;
+    LpEntry2->ucCounter = LpEntry2Input->ucCounter;
+    LpEntry2->usEventGroupId = LpEntry2Input->usEventGroupId;
+    /* SWS_SD_00432  */
+    LpEntry2->ulTtlsec = (uint16)SD_ZERO;
 
-  LpEntry2->ucIndex1 = SD_ZERO;
-  LpEntry2->ucIndex2 = SD_ZERO;
-  LpEntry2->ucNoOfOptions1 = SD_ZERO;
-  LpEntry2->ucNoOfOptions2 = SD_ZERO;
-  /* SWS_SD_00431  */
-  LpEntry2->usServiceId = LpEntry2Input->usServiceId;
-  /*polyspace +4 RTE:NIV [Justified:Low] "Pointers with this orange flag are
-      made sure that they are initialized with proper Value " */
-  LpEntry2->usInstanceId = LpEntry2Input->usInstanceId;
-  LpEntry2->ucMajorVersion = LpEntry2Input->ucMajorVersion;
-  /*polyspace +4 RTE:NIV [Justified:Low] "Pointers with this orange flag are
-      made sure that they are initialized with proper Value " */
-  LpEntry2->usReserved = LpEntry2Input->usReserved;
-  LpEntry2->ucCounter = LpEntry2Input->ucCounter;
-  LpEntry2->usEventGroupId = LpEntry2Input->usEventGroupId;
-  /* SWS_SD_00432  */
-  LpEntry2->ulTtlsec = (uint16)SD_ZERO;
+    LpQueueElement->ucSdInstanceIndex = LpInstanceStatic->ucInstanceSelfIndex;
 
-  LpQueueElement->ucSdInstanceIndex = LpInstanceStatic->ucInstanceSelfIndex;
+    LpQueueElement->ddGenericIndex = SD_ZERO;
 
-  LpQueueElement->ddGenericIndex = SD_ZERO;
+    LpQueueElement->ulDelayCount = LulDelay;
 
-  LpQueueElement->ulDelayCount = LulDelay;
+    LpQueueElement->blSendUnicast = SD_TRUE;
 
-  LpQueueElement->blSendUnicast = SD_TRUE;
+    Sd_CopyIpAddr(&(LpQueueElement->stSendAddr), LpSendAddr);
 
-  Sd_CopyIpAddr(&(LpQueueElement->stSendAddr), LpSendAddr);
-
-  Sd_AddToQueue(LpQueueElement);
+    Sd_AddToQueue(LpQueueElement);
+  }
+  /* Single exit at end, no return for void */
 }
 #define SD_STOP_SEC_CODE
 #include "Sd_MemMap.h"
@@ -770,54 +912,72 @@ void Sd_SendSubscribeNack(
 #if (STD_ON == SD_CLIENT_CONFIGURED)
 #define SD_START_SEC_CODE
 #include "Sd_MemMap.h"
+
+/* parasoft-begin-suppress CERT_C-API00-a-3 
+"Reason: Sd_Tx_c_Cert_REF_1" */
+/* parasoft-begin-suppress CERT_C-DCL00-b-3 
+  "Reason: Sd_Tx_c_Cert_REF_2" */
 void Sd_SendFind(
-    const Sd_ClientServiceStaticType * LpClientServiceStatic,
-    uint32 LulDelay)
+  const Sd_ClientServiceStaticType * LpClientServiceStatic,
+  const uint32 LulDelay)
+/* parasoft-end-suppress CERT_C-API00-a-3 */
+/* parasoft-end-suppress CERT_C-DCL00-b-3 */
 {
   Sd_QueueType LstQueueElement;
   Sd_QueueType *LpQueueElement;
   Sd_Entry1DataType *LpEntry1;
-  LpQueueElement = &LstQueueElement;
-  (LpQueueElement->stEntryData).enTypeOfEntry = SD_FIND_SERVICE_ENTRY;
-
-  LpEntry1 = &((LpQueueElement->stEntryData).unEntryData.stEntry1);
-  /* SWS_SD_00240
-     SWS_SD_00294 */
-  LpEntry1->ucEntryType = SD_ENTRY_TYPE_FIND;
-  LpEntry1->ucIndex1 = SD_ZERO;
-  LpEntry1->ucIndex2 = SD_ZERO;
-  LpEntry1->ucNoOfOptions1 = SD_ZERO;
-  LpEntry1->ucNoOfOptions2 = SD_ZERO;
-
-  LpEntry1->usServiceId = LpClientServiceStatic->usServiceId;
-  LpEntry1->usInstanceId = LpClientServiceStatic->usInstanceId;
-  LpEntry1->ucMajorVersion = LpClientServiceStatic->ucMajorVersion;
-
-  /* SWS_SD_00503 */
-  /*polyspace +15 RTE:UNR [Justified:Low] "This Condition shall be false
-                        when EndrivenBehaviour is Set as SD_MINIMUM_VERSION " */
-  if (LpClientServiceStatic->EndrivenBehaviour ==
-      SD_EXACT_OR_ANY_MINOR_VERSION)
+  /* Parameter validation for Parasoft CERT_C-API00-a-3 */
+  boolean LblParamValid;
+  LblParamValid = SD_TRUE;
+  if (SD_NULL_PTR == LpClientServiceStatic)
   {
-    LpEntry1->ulMinorVersion = LpClientServiceStatic->ulMinorVersion;
+    /* Parasoft compliance: pointer parameter validation */
+    LblParamValid = SD_FALSE;
   }
-  else
+  if (LblParamValid == SD_TRUE)
   {
-    /* [SWS_SD_10503]{DRAFT} */
+    LpQueueElement = &LstQueueElement;
+    (LpQueueElement->stEntryData).enTypeOfEntry = SD_FIND_SERVICE_ENTRY;
+
+    LpEntry1 = &((LpQueueElement->stEntryData).unEntryData.stEntry1);
+    /* SWS_SD_00240
+       SWS_SD_00294 */
+    LpEntry1->ucEntryType = SD_ENTRY_TYPE_FIND;
+    LpEntry1->ucIndex1 = SD_ZERO;
+    LpEntry1->ucIndex2 = SD_ZERO;
+    LpEntry1->ucNoOfOptions1 = SD_ZERO;
+    LpEntry1->ucNoOfOptions2 = SD_ZERO;
+
+    LpEntry1->usServiceId = LpClientServiceStatic->usServiceId;
+    LpEntry1->usInstanceId = LpClientServiceStatic->usInstanceId;
+    LpEntry1->ucMajorVersion = LpClientServiceStatic->ucMajorVersion;
+
+    /* SWS_SD_00503 */
+    /*polyspace +15 RTE:UNR [Justified:Low] "This Condition shall be false
+                          when EndrivenBehaviour is Set as SD_MINIMUM_VERSION " */
+    if (LpClientServiceStatic->EndrivenBehaviour ==
+        SD_EXACT_OR_ANY_MINOR_VERSION)
+    {
+      LpEntry1->ulMinorVersion = LpClientServiceStatic->ulMinorVersion;
+    }
+    else
+    {
+      /* [SWS_SD_10503]{DRAFT} */
+    }
+    /* SWS_SD_00504  */
+    LpEntry1->ulTtlsec = LpClientServiceStatic->pClientTimer->ulClientTimerTtlsec;
+
+    LpQueueElement->ucSdInstanceIndex =
+        LpClientServiceStatic->ucSdInstanceIndex;
+
+    LpQueueElement->ddGenericIndex = LpClientServiceStatic->usClientSelfIndex;
+
+    LpQueueElement->ulDelayCount = LulDelay;
+
+    LpQueueElement->blSendUnicast = FALSE;
+
+    Sd_AddToQueue(LpQueueElement);
   }
-  /* SWS_SD_00504  */
-  LpEntry1->ulTtlsec = LpClientServiceStatic->pClientTimer->ulClientTimerTtlsec;
-
-  LpQueueElement->ucSdInstanceIndex =
-      LpClientServiceStatic->ucSdInstanceIndex;
-
-  LpQueueElement->ddGenericIndex = LpClientServiceStatic->usClientSelfIndex;
-
-  LpQueueElement->ulDelayCount = LulDelay;
-
-  LpQueueElement->blSendUnicast = FALSE;
-
-  Sd_AddToQueue(LpQueueElement);
 }
 #define SD_STOP_SEC_CODE
 #include "Sd_MemMap.h"
@@ -859,61 +1019,79 @@ void Sd_SendFind(
 #if (STD_ON == SD_CONSUMED_EV_GRP_CONFIGURED)
 #define SD_START_SEC_CODE
 #include "Sd_MemMap.h"
+/* parasoft-begin-suppress CERT_C-API00-a-3 
+"Reason: Sd_Tx_c_Cert_REF_1" */
+/* parasoft-begin-suppress CERT_C-DCL00-b-3 
+  "Reason: Sd_Tx_c_Cert_REF_2" */
 void Sd_SendSubscribe(
-    const Sd_ConsumedEvGrpStaticType * LpConsumedEvGrpStatic,
-    const TcpIp_SockAddrType * LpSendAddr,
-    uint32 LulDelay)
+  const Sd_ConsumedEvGrpStaticType * LpConsumedEvGrpStatic,
+  const TcpIp_SockAddrType * LpSendAddr,
+  const uint32 LulDelay)
+/* parasoft-end-suppress CERT_C-API00-a-3 */
+/* parasoft-end-suppress CERT_C-DCL00-b-3 */
 {
   Sd_QueueType LstQueueElement;
   Sd_QueueType *LpQueueElement;
   Sd_Entry2DataType *LpEntry2;
   Sd_ClientServiceStaticType const *LpClientServiceStatic;
+  boolean LblParamValid = SD_TRUE;
+
+  if ((SD_NULL_PTR == LpConsumedEvGrpStatic) || (SD_NULL_PTR == LpSendAddr))
+  {
+    /* Parasoft compliance: pointer parameter validation */
+    LblParamValid = SD_FALSE;
+  }
   /* SWS_SD_00300
      SWS_SD_00301
    SWS_SD_00290
    SWS_SD_00303*/
-  LpQueueElement = &LstQueueElement;
+  if (LblParamValid == SD_TRUE)
+  {
+    LpQueueElement = &LstQueueElement;
 #if (STD_ON == SD_PRE_COMPILE_SINGLE)
-  LpClientServiceStatic =
-      &Sd_GaaClientServiceStatic[LpConsumedEvGrpStatic->usClientServiceIndex];
+    LpClientServiceStatic =
+        &Sd_GaaClientServiceStatic[LpConsumedEvGrpStatic->usClientServiceIndex];
 #else
-  LpClientServiceStatic =
-      ((Sd_GpConfigPtr->pSd_GaaClientServiceStatic) + LpConsumedEvGrpStatic->usClientServiceIndex);
+    LpClientServiceStatic =
+        &(Sd_GpConfigPtr->pSd_GaaClientServiceStatic
+          [LpConsumedEvGrpStatic->usClientServiceIndex]);
 #endif
-  (LpQueueElement->stEntryData).enTypeOfEntry = SD_SUBSCRIBE_ENTRY;
+    (LpQueueElement->stEntryData).enTypeOfEntry = SD_SUBSCRIBE_ENTRY;
 
-  LpEntry2 = &((LpQueueElement->stEntryData).unEntryData.stEntry2);
-  /* SWS_SD_00312  */
-  LpEntry2->ucEntryType = SD_ENTRY_TYPE_SUBSCRIBE;
+    LpEntry2 = &((LpQueueElement->stEntryData).unEntryData.stEntry2);
+    /* SWS_SD_00312  */
+    LpEntry2->ucEntryType = SD_ENTRY_TYPE_SUBSCRIBE;
 
-  LpEntry2->ucIndex1 = SD_ZERO;
-  LpEntry2->ucIndex2 = SD_ZERO;
-  LpEntry2->ucNoOfOptions1 = SD_ZERO;
-  LpEntry2->ucNoOfOptions2 = SD_ZERO;
-  /* SWS_SD_00301  */
+    LpEntry2->ucIndex1 = SD_ZERO;
+    LpEntry2->ucIndex2 = SD_ZERO;
+    LpEntry2->ucNoOfOptions1 = SD_ZERO;
+    LpEntry2->ucNoOfOptions2 = SD_ZERO;
+    /* SWS_SD_00301  */
 
-  LpEntry2->usServiceId = LpClientServiceStatic->usServiceId;
-  LpEntry2->usInstanceId = LpClientServiceStatic->usInstanceId;
-  LpEntry2->ucMajorVersion = LpClientServiceStatic->ucMajorVersion;
+    LpEntry2->usServiceId = LpClientServiceStatic->usServiceId;
+    LpEntry2->usInstanceId = LpClientServiceStatic->usInstanceId;
+    LpEntry2->ucMajorVersion = LpClientServiceStatic->ucMajorVersion;
 
-  LpEntry2->ucCounter = LpConsumedEvGrpStatic->ucCounter;
-  LpEntry2->usEventGroupId = LpConsumedEvGrpStatic->usEventGroupId;
-  /* SWS_SD_00304
-     SWS_SD_00200
-     SWS_SD_00304b*/
-  LpEntry2->ulTtlsec = LpConsumedEvGrpStatic->pClientTimer->ulClientTimerTtlsec;
+    LpEntry2->ucCounter = LpConsumedEvGrpStatic->ucCounter;
+    LpEntry2->usEventGroupId = LpConsumedEvGrpStatic->usEventGroupId;
+    /* SWS_SD_00304
+       SWS_SD_00200
+       SWS_SD_00304b*/
+    LpEntry2->ulTtlsec = LpConsumedEvGrpStatic->pClientTimer->ulClientTimerTtlsec;
 
-  LpQueueElement->ucSdInstanceIndex = LpClientServiceStatic->ucSdInstanceIndex;
+    LpQueueElement->ucSdInstanceIndex = LpClientServiceStatic->ucSdInstanceIndex;
 
-  LpQueueElement->ddGenericIndex = LpConsumedEvGrpStatic->usConEvGrpSelfIndex;
+    LpQueueElement->ddGenericIndex = LpConsumedEvGrpStatic->usConEvGrpSelfIndex;
 
-  LpQueueElement->ulDelayCount = LulDelay;
+    LpQueueElement->ulDelayCount = LulDelay;
 
-  LpQueueElement->blSendUnicast = SD_TRUE;
+    LpQueueElement->blSendUnicast = SD_TRUE;
 
-  Sd_CopyIpAddr(&(LpQueueElement->stSendAddr), LpSendAddr);
+    Sd_CopyIpAddr(&(LpQueueElement->stSendAddr), LpSendAddr);
 
-  Sd_AddToQueue(LpQueueElement);
+    Sd_AddToQueue(LpQueueElement);
+  }
+  /* Single exit at end, no return for void */
 }
 #define SD_STOP_SEC_CODE
 #include "Sd_MemMap.h"
@@ -955,66 +1133,82 @@ void Sd_SendSubscribe(
 #if (STD_ON == SD_CONSUMED_EV_GRP_CONFIGURED)
 #define SD_START_SEC_CODE
 #include "Sd_MemMap.h"
+/* parasoft-begin-suppress CERT_C-API00-a-3 
+"Reason: Sd_Tx_c_Cert_REF_1" */
+/* parasoft-begin-suppress CERT_C-DCL00-b-3 
+  "Reason: Sd_Tx_c_Cert_REF_2" */
 void Sd_SendStopSubscribe(
-    const Sd_ConsumedEvGrpStaticType * LpConsumedEvGrpStatic,
-    const TcpIp_SockAddrType * LpSendAddr,
-    uint32 LulDelay)
+  const Sd_ConsumedEvGrpStaticType * LpConsumedEvGrpStatic,
+  const TcpIp_SockAddrType * LpSendAddr,
+  const uint32 LulDelay)
+/* parasoft-end-suppress CERT_C-API00-a-3 */
+/* parasoft-end-suppress CERT_C-DCL00-b-3 */
 {
   Sd_QueueType LstQueueElement;
   Sd_QueueType *LpQueueElement;
   Sd_Entry2DataType *LpEntry2;
   Sd_ClientServiceStaticType const *LpClientServiceStatic;
 
-  LpQueueElement = &LstQueueElement;
-  (LpQueueElement->stEntryData).enTypeOfEntry = SD_STOP_SUBSCRIBE_ENTRY;
+  if ((SD_NULL_PTR == LpConsumedEvGrpStatic) || (SD_NULL_PTR == LpSendAddr))
+  {
+    /* Parasoft compliance: pointer parameter validation */
+    /* Do nothing */
+  }
+  else
+  {
+    LpQueueElement = &LstQueueElement;
+    (LpQueueElement->stEntryData).enTypeOfEntry = SD_STOP_SUBSCRIBE_ENTRY;
 
-#if (STD_ON == SD_PRE_COMPILE_SINGLE)
-  LpClientServiceStatic =
-      &Sd_GaaClientServiceStatic[LpConsumedEvGrpStatic->usClientServiceIndex];
-#else
-  LpClientServiceStatic =
-      ((Sd_GpConfigPtr->pSd_GaaClientServiceStatic) + LpConsumedEvGrpStatic->usClientServiceIndex);
-#endif
+  #if (STD_ON == SD_PRE_COMPILE_SINGLE)
+    LpClientServiceStatic =
+        &Sd_GaaClientServiceStatic[LpConsumedEvGrpStatic->usClientServiceIndex];
+  #else
+    LpClientServiceStatic =
+        &(Sd_GpConfigPtr->pSd_GaaClientServiceStatic
+        [LpConsumedEvGrpStatic->usClientServiceIndex]);
+  #endif
 
-  LpEntry2 = &((LpQueueElement->stEntryData).unEntryData.stEntry2);
-  /* SWS_SD_00313 */
-  LpEntry2->ucEntryType = SD_ENTRY_TYPE_STOP_SUBSCRIBE;
+    LpEntry2 = &((LpQueueElement->stEntryData).unEntryData.stEntry2);
+    /* SWS_SD_00313 */
+    LpEntry2->ucEntryType = SD_ENTRY_TYPE_STOP_SUBSCRIBE;
 
-  LpEntry2->ucIndex1 = SD_ZERO;
-  LpEntry2->ucIndex2 = SD_ZERO;
-  LpEntry2->ucNoOfOptions1 = SD_ZERO;
-  LpEntry2->ucNoOfOptions2 = SD_ZERO;
-  /* SWS_SD_00301
-     SWS_SD_00178
-   SWS_SD_00193
-   SWS_SD_00195*/
+    LpEntry2->ucIndex1 = SD_ZERO;
+    LpEntry2->ucIndex2 = SD_ZERO;
+    LpEntry2->ucNoOfOptions1 = SD_ZERO;
+    LpEntry2->ucNoOfOptions2 = SD_ZERO;
+    /* SWS_SD_00301
+      SWS_SD_00178
+    SWS_SD_00193
+    SWS_SD_00195*/
 
-  LpEntry2->usServiceId = LpClientServiceStatic->usServiceId;
-  LpEntry2->usInstanceId = LpClientServiceStatic->usInstanceId;
-  /* SWS_SD_00198 */
-  LpEntry2->ucMajorVersion = LpClientServiceStatic->ucMajorVersion;
+    LpEntry2->usServiceId = LpClientServiceStatic->usServiceId;
+    LpEntry2->usInstanceId = LpClientServiceStatic->usInstanceId;
+    /* SWS_SD_00198 */
+    LpEntry2->ucMajorVersion = LpClientServiceStatic->ucMajorVersion;
 
-  LpEntry2->ucCounter = LpConsumedEvGrpStatic->ucCounter;
-  /* SWS_SD_00204 */
-  LpEntry2->usEventGroupId = LpConsumedEvGrpStatic->usEventGroupId;
-  /* SWS_SD_00426
-     SWS_SD_00200
-   SWS_SD_00306 */
-  LpEntry2->ulTtlsec = SD_ZERO;
-  /*SWS_SD_00426*/
+    LpEntry2->ucCounter = LpConsumedEvGrpStatic->ucCounter;
+    /* SWS_SD_00204 */
+    LpEntry2->usEventGroupId = LpConsumedEvGrpStatic->usEventGroupId;
+    /* SWS_SD_00426
+      SWS_SD_00200
+    SWS_SD_00306 */
+    LpEntry2->ulTtlsec = SD_ZERO;
+    /*SWS_SD_00426*/
 
-  LpQueueElement->ucSdInstanceIndex =
-      LpClientServiceStatic->ucSdInstanceIndex;
+    LpQueueElement->ucSdInstanceIndex =
+        LpClientServiceStatic->ucSdInstanceIndex;
 
-  LpQueueElement->ddGenericIndex = LpConsumedEvGrpStatic->usConEvGrpSelfIndex;
+    LpQueueElement->ddGenericIndex = 
+    LpConsumedEvGrpStatic->usConEvGrpSelfIndex;
 
-  LpQueueElement->ulDelayCount = LulDelay;
+    LpQueueElement->ulDelayCount = LulDelay;
 
-  LpQueueElement->blSendUnicast = SD_TRUE;
+    LpQueueElement->blSendUnicast = SD_TRUE;
 
-  Sd_CopyIpAddr(&(LpQueueElement->stSendAddr), LpSendAddr);
+    Sd_CopyIpAddr(&(LpQueueElement->stSendAddr), LpSendAddr);
 
-  Sd_AddToQueue(LpQueueElement);
+    Sd_AddToQueue(LpQueueElement);
+  }
 }
 #define SD_STOP_SEC_CODE
 #include "Sd_MemMap.h"
@@ -1065,60 +1259,62 @@ void Sd_SendStopSubscribe(
 #define SD_START_SEC_CODE
 #include "Sd_MemMap.h"
 /* polyspace-begin RTE:UNR [Justified:Low] "Refer Sd_c_Poly_REF_1"*/
+/* parasoft-begin-suppress CERT_C-API00-a-3 
+"Reason: Sd_Tx_c_Cert_REF_1" */
+/* parasoft-begin-suppress CERT_C-DCL00-b-3 
+  "Reason: Sd_Tx_c_Cert_REF_2" */
 static boolean Sd_QueueCheckforTransmit(
     const Sd_QueueType * LpQueueElement,
     boolean * LpFirstEntry,
     uint8 * LpInitialSdInstance,
     boolean * LpInitialFrameUnicast,
     TcpIp_SockAddrType * LpInitialSendAddr)
+/* parasoft-end-suppress CERT_C-API00-a-3 */
+/* parasoft-end-suppress CERT_C-DCL00-b-3 */
 {
-  boolean LblTransmitEntry;
-  /* SWS_SD_00651a
-   SWS_SD_00651b
-   SWS_SD_00448c */
-  /* polyspace +3 RTE:UNR [Justified:Low] "This check will be true when
-  LpFirstEntry is equal to SD_TRUE " */
-  if (SD_TRUE == *LpFirstEntry)
+  boolean LblTransmitEntry = SD_FALSE;
+  /* Parameter validation for Parasoft CERT_C-API00-a-3 */
+  if ((SD_NULL_PTR != LpQueueElement) && (SD_NULL_PTR != LpFirstEntry) && (SD_NULL_PTR != LpInitialSdInstance) && (SD_NULL_PTR != LpInitialFrameUnicast) && (SD_NULL_PTR != LpInitialSendAddr))
   {
-
-    *LpInitialSdInstance = LpQueueElement->ucSdInstanceIndex;
-
-    if (SD_FALSE == LpQueueElement->blSendUnicast)
+    /* SWS_SD_00651a
+     SWS_SD_00651b
+     SWS_SD_00448c */
+    /* polyspace +3 RTE:UNR [Justified:Low] "This check will be true when
+    LpFirstEntry is equal to SD_TRUE " */
+    if (SD_TRUE == *LpFirstEntry)
     {
-      *LpInitialFrameUnicast = FALSE;
-    }
-    else
-    {
-      *LpInitialFrameUnicast = SD_TRUE;
-
-      Sd_CopyIpAddr(LpInitialSendAddr, &(LpQueueElement->stSendAddr));
-    }
-
-    LblTransmitEntry = SD_TRUE;
-
-    *LpFirstEntry = FALSE;
-  }
-  else
-  {
-
-    if ((LpQueueElement->ucSdInstanceIndex == *LpInitialSdInstance) &&
-        (LpQueueElement->blSendUnicast == *LpInitialFrameUnicast))
-    {
+      *LpInitialSdInstance = LpQueueElement->ucSdInstanceIndex;
       if (SD_FALSE == LpQueueElement->blSendUnicast)
       {
-
-        LblTransmitEntry = SD_TRUE;
+        *LpInitialFrameUnicast = FALSE;
       }
       else
       {
-
-        LblTransmitEntry = Sd_MatchIpAddr(LpInitialSendAddr,
-                                          &(LpQueueElement->stSendAddr));
+        *LpInitialFrameUnicast = SD_TRUE;
+        Sd_CopyIpAddr(LpInitialSendAddr, &(LpQueueElement->stSendAddr));
       }
+      LblTransmitEntry = SD_TRUE;
+      *LpFirstEntry = FALSE;
     }
     else
     {
-      LblTransmitEntry = FALSE;
+      if ((LpQueueElement->ucSdInstanceIndex == *LpInitialSdInstance) &&
+          (LpQueueElement->blSendUnicast == *LpInitialFrameUnicast))
+      {
+        if (SD_FALSE == LpQueueElement->blSendUnicast)
+        {
+          LblTransmitEntry = SD_TRUE;
+        }
+        else
+        {
+          LblTransmitEntry = Sd_MatchIpAddr(LpInitialSendAddr,
+                                            &(LpQueueElement->stSendAddr));
+        }
+      }
+      else
+      {
+        LblTransmitEntry = FALSE;
+      }
     }
   }
   return (LblTransmitEntry);
@@ -1172,11 +1368,17 @@ static boolean Sd_QueueCheckforTransmit(
 #define SD_START_SEC_CODE
 #include "Sd_MemMap.h"
 /* polyspace-begin RTE:UNR [Justified:Low] "Refer Sd_c_Poly_REF_1"*/
+/* parasoft-begin-suppress CERT_C-API00-a-3 
+"Reason: Sd_Tx_c_Cert_REF_1" */
+/* parasoft-begin-suppress CERT_C-DCL00-b-3 
+  "Reason: Sd_Tx_c_Cert_REF_2" */
 static uint8 Sd_QueueFillOptionsRefConfig(
     const uint8 * LpElementConfigOption,
     uint8 * LpNoOfOptionsTx,
     boolean * LpQueueOverflow,
     boolean * LpConfigOptionPresent)
+/* parasoft-end-suppress CERT_C-API00-a-3 */
+/* parasoft-end-suppress CERT_C-DCL00-b-3 */
 {
   uint16 LusCount;
   boolean LblMatch;
@@ -1185,63 +1387,66 @@ static uint8 Sd_QueueFillOptionsRefConfig(
 
   LusMatchIndex = SD_ZERO;
   LucConfigIndex = SD_ZERO;
-  /* SWS_SD_00188
-     SWS_SD_00626 */
-  /*polyspace +5 RTE:UNR [Justified:Low] "This If condition will be false if
-  LpElementConfigOption is Set as SD_NULL_PTR" */
-  if (SD_NULL_PTR == LpElementConfigOption)
+  /* Parameter validation for Parasoft CERT_C-API00-a-3 */
+  if ((SD_NULL_PTR != LpNoOfOptionsTx) && (SD_NULL_PTR != LpQueueOverflow) && (SD_NULL_PTR != LpConfigOptionPresent))
   {
-    *LpConfigOptionPresent = FALSE;
-  }
-  else
-  {
-    *LpConfigOptionPresent = SD_TRUE;
-
-    LblMatch = FALSE;
-    /* polyspace +4 RTE:UNR [Justified:Low] "This check will be false when
-     LblMatch is  false" */
-    for (LusCount = SD_ZERO; ((LusCount < *LpNoOfOptionsTx) &&
-                              (SD_FALSE == LblMatch));
-         LusCount++)
+    /* SWS_SD_00188
+       SWS_SD_00626 */
+    /*polyspace +5 RTE:UNR [Justified:Low] "This If condition will be false if
+    LpElementConfigOption is Set as SD_NULL_PTR" */
+    if (SD_NULL_PTR == LpElementConfigOption)
     {
-      if ((SD_CONFIGURATION_OPTION ==
-           Sd_GaaOptionsRef[LusCount].enTypeOfOption) &&
-          (LpElementConfigOption ==
-           Sd_GaaOptionsRef[LusCount].pConfigOption))
-      {
-        LblMatch = SD_TRUE;
-        LusMatchIndex = LusCount;
-      }
+      *LpConfigOptionPresent = FALSE;
     }
-    /* polyspace +3 RTE:UNR [Justified:Low] "This check will be true when
-   LblMatch is true" */
-    if (SD_FALSE == LblMatch)
-    {
-      /* polyspace +5 RTE:UNR [Justified:Low] "This check will be false when
-                                     LpNoOfOptionsTx is less than SD_SIXTEEN " */
-      if (*LpNoOfOptionsTx > SD_SIXTEEN)
-      {
-        *LpQueueOverflow = SD_TRUE;
-      }
-      else
-      {
-        /*polyspace +4 RTE:OBAI [Justified:Low] "Pointers with this orange flag are
-             made sure that they are within their range by having necessary boundary
-             checks in order to prevent them from being out of bounds." */
-        Sd_GaaOptionsRef[*LpNoOfOptionsTx].enTypeOfOption =
-            SD_CONFIGURATION_OPTION;
-        Sd_GaaOptionsRef[*LpNoOfOptionsTx].pConfigOption =
-            LpElementConfigOption;
-
-        LucConfigIndex = *LpNoOfOptionsTx;
-
-        *LpNoOfOptionsTx = *LpNoOfOptionsTx + SD_ONE;
-      }
-    }
-
     else
     {
-      LucConfigIndex = (uint8)LusMatchIndex;
+      *LpConfigOptionPresent = SD_TRUE;
+
+      LblMatch = FALSE;
+      /* polyspace +4 RTE:UNR [Justified:Low] "This check will be false when
+       LblMatch is  false" */
+      for (LusCount = SD_ZERO; ((LusCount < ((uint16) *LpNoOfOptionsTx)) &&
+          (SD_FALSE == LblMatch)); LusCount++)
+      {
+        if ((SD_CONFIGURATION_OPTION ==
+             Sd_GaaOptionsRef[LusCount].enTypeOfOption) &&
+            (LpElementConfigOption ==
+             Sd_GaaOptionsRef[LusCount].pConfigOption))
+        {
+          LblMatch = SD_TRUE;
+          LusMatchIndex = LusCount;
+        }
+      }
+      /* polyspace +3 RTE:UNR [Justified:Low] "This check will be true when
+     LblMatch is true" */
+      if (SD_FALSE == LblMatch)
+      {
+        /* polyspace +5 RTE:UNR [Justified:Low] "This check will be false when
+                                       LpNoOfOptionsTx is less than SD_SIXTEEN " */
+        if (*LpNoOfOptionsTx >= (uint8) SD_SIXTEEN)
+        {
+          *LpQueueOverflow = SD_TRUE;
+        }
+        else
+        {
+          /*polyspace +4 RTE:OBAI [Justified:Low] "Pointers with this orange flag are
+               made sure that they are within their range by having necessary boundary
+               checks in order to prevent them from being out of bounds." */
+          Sd_GaaOptionsRef[*LpNoOfOptionsTx].enTypeOfOption =
+              SD_CONFIGURATION_OPTION;
+          Sd_GaaOptionsRef[*LpNoOfOptionsTx].pConfigOption =
+              LpElementConfigOption;
+
+          LucConfigIndex = *LpNoOfOptionsTx;
+
+          *LpNoOfOptionsTx = *LpNoOfOptionsTx + SD_ONE;
+        }
+      }
+
+      else
+      {
+        LucConfigIndex = (uint8)LusMatchIndex;
+      }
     }
   }
   return (LucConfigIndex);
@@ -1294,60 +1499,57 @@ static uint8 Sd_QueueFillOptionsRefConfig(
 *******************************************************************************/
 #define SD_START_SEC_CODE
 #include "Sd_MemMap.h"
+/* parasoft-begin-suppress CERT_C-API00-a-3 
+"Reason: Sd_Tx_c_Cert_REF_1" */
+/* parasoft-begin-suppress CERT_C-DCL00-b-3 
+  "Reason: Sd_Tx_c_Cert_REF_2" */
 static uint8 Sd_QueueFillOptionsRefSingle(
     SoAd_SoConIdType LddSoConId1,
     uint8 LucSoCon1Protocol,
     Sd_TypeOfOptionsType LenTypeOfOption,
     uint8 * LpNoOfOptionsTx,
     boolean * LpQueueOverflow)
+/* parasoft-end-suppress CERT_C-API00-a-3 */
+/* parasoft-end-suppress CERT_C-DCL00-b-3 */
 {
   boolean LblMatch;
   uint16 LusMatchIndex;
-  uint16 LusCount;
   uint8 LucSoConIndex;
 
   LusMatchIndex = SD_ZERO;
   LucSoConIndex = SD_ZERO;
 
-  LblMatch = FALSE;
-  for (LusCount = SD_ZERO; ((LusCount < *LpNoOfOptionsTx) &&
-                            (SD_FALSE == LblMatch));
-       LusCount++)
+  /* Parameter validation for Parasoft CERT_C-API00-a-3 */
+  if ((SD_NULL_PTR != LpNoOfOptionsTx) && (SD_NULL_PTR != LpQueueOverflow))
   {
-    /*polyspace +6 RTE:OBAI [Justified:Low] "Pointers with this orange flag are
-      made sure that they are within their range by having necessary boundary
-      checks in order to prevent them from being out of bounds." */
-    if ((LenTypeOfOption == Sd_GaaOptionsRef[LusCount].enTypeOfOption) &&
-        (LddSoConId1 == Sd_GaaOptionsRef[LusCount].ddLocalAddrSoConId) &&
-        (LucSoCon1Protocol == Sd_GaaOptionsRef[LusCount].ucProtocol))
-    {
-      LblMatch = SD_TRUE;
-      LusMatchIndex = LusCount;
-    }
-  }
+    LblMatch = FALSE;
+    
+    Sd_CheckOptionMatch(&LenTypeOfOption, &LddSoConId1, &LucSoCon1Protocol, 
+        LpNoOfOptionsTx, &LblMatch, &LusMatchIndex);
 
-  if (SD_TRUE == LblMatch)
-  {
-    LucSoConIndex = (uint8)LusMatchIndex;
-  }
-  else
-  {
-    /* polyspace +4 RTE:UNR [Justified:Low] "This check will be false when
-                                LpNoOfOptionsTx is less than SD_SIXTEEN " */
-    if (*LpNoOfOptionsTx > SD_SIXTEEN)
+    if (SD_TRUE == LblMatch)
     {
-      *LpQueueOverflow = SD_TRUE;
+      LucSoConIndex = (uint8)LusMatchIndex;
     }
     else
     {
-      /*polyspace +3 RTE:OBAI [Justified:Low] "Pointers with this orange flag are
-          made sure that they are within their range by having necessary boundary
-          checks in order to prevent them from being out of bounds." */
-      Sd_GaaOptionsRef[*LpNoOfOptionsTx].enTypeOfOption = LenTypeOfOption;
-      Sd_GaaOptionsRef[*LpNoOfOptionsTx].ddLocalAddrSoConId = LddSoConId1;
-      Sd_GaaOptionsRef[*LpNoOfOptionsTx].ucProtocol = LucSoCon1Protocol;
-      LucSoConIndex = *LpNoOfOptionsTx;
-      *LpNoOfOptionsTx = *LpNoOfOptionsTx + SD_ONE;
+      /* polyspace +4 RTE:UNR [Justified:Low] "This check will be false when
+                                  LpNoOfOptionsTx is less than SD_SIXTEEN " */
+      if (*LpNoOfOptionsTx >= ((uint8) SD_SIXTEEN))
+      {
+        *LpQueueOverflow = SD_TRUE;
+      }
+      else
+      {
+        /*polyspace +3 RTE:OBAI [Justified:Low] "Pointers with this orange flag are
+            made sure that they are within their range by having necessary boundary
+            checks in order to prevent them from being out of bounds." */
+        Sd_GaaOptionsRef[*LpNoOfOptionsTx].enTypeOfOption = LenTypeOfOption;
+        Sd_GaaOptionsRef[*LpNoOfOptionsTx].ddLocalAddrSoConId = LddSoConId1;
+        Sd_GaaOptionsRef[*LpNoOfOptionsTx].ucProtocol = LucSoCon1Protocol;
+        LucSoConIndex = *LpNoOfOptionsTx;
+        *LpNoOfOptionsTx = *LpNoOfOptionsTx + SD_ONE;
+      }
     }
   }
   return (LucSoConIndex);
@@ -1404,6 +1606,10 @@ static uint8 Sd_QueueFillOptionsRefSingle(
 #define SD_START_SEC_CODE
 #include "Sd_MemMap.h"
 /* polyspace-begin RTE:UNR [Justified:Low] "Refer Sd_c_Poly_REF_1"*/
+/* parasoft-begin-suppress CERT_C-API00-a-3 
+"Reason: Sd_Tx_c_Cert_REF_1" */
+/* parasoft-begin-suppress CERT_C-DCL00-b-3 
+  "Reason: Sd_Tx_c_Cert_REF_2" */
 static uint8 Sd_QueueFillOptionsRefDouble(
     SoAd_SoConIdType LddSoConId1,
     uint8 LucSoCon1Protocol,
@@ -1412,10 +1618,11 @@ static uint8 Sd_QueueFillOptionsRefDouble(
     Sd_TypeOfOptionsType LenTypeOfOption,
     uint8 * LpNoOfOptionsTx,
     boolean * LpQueueOverflow)
+/* parasoft-end-suppress CERT_C-API00-a-3 */
+/* parasoft-end-suppress CERT_C-DCL00-b-3 */
 {
   boolean LblMatch;
   uint16 LusMatchIndex;
-  uint16 LusCount;
   boolean LblAddToEnd;
   uint8 LucSoConIndex;
 
@@ -1428,74 +1635,64 @@ static uint8 Sd_QueueFillOptionsRefDouble(
      SWS_SD_00626
      SWS_SD_00651a */
 
-  for (LusCount = SD_ZERO; ((LusCount < *LpNoOfOptionsTx) &&
-                            (SD_FALSE == LblMatch));
-       LusCount++)
+  /* Parameter validation for Parasoft CERT_C-API00-a-3 */
+  if ((SD_NULL_PTR != LpNoOfOptionsTx) && (SD_NULL_PTR != LpQueueOverflow))
   {
-    /*polyspace +8 RTE:UNR [Justified:Low] "This condition will be true when configured value
-    match the received value." */
-    /*polyspace +6 RTE:OBAI [Justified:Low] "Pointers with this orange flag are
-       made sure that they are within their range by having necessary boundary
-       checks in order to prevent them from being out of bounds." */
-    if ((LenTypeOfOption == Sd_GaaOptionsRef[LusCount].enTypeOfOption) &&
-        (LddSoConId1 == Sd_GaaOptionsRef[LusCount].ddLocalAddrSoConId) &&
-        (LucSoCon1Protocol == Sd_GaaOptionsRef[LusCount].ucProtocol))
-    {
-      LblMatch = SD_TRUE;
-      LusMatchIndex = LusCount;
-    }
-  }
-  /* polyspace +3 RTE:UNR [Justified:Low] "This check will be true when
-    Lblmatch is equal to False  */
-  if (SD_FALSE == LblMatch)
-  {
-    LblAddToEnd = SD_TRUE;
-  }
-  else
-  {
-    /*polyspace +9 RTE:OBAI [Justified:Low] "Pointers with this orange flag are
-       made sure that they are within their range by having necessary boundary
-       checks in order to prevent them from being out of bounds." */
-    if ((LusMatchIndex < *LpNoOfOptionsTx) &&
-        (LenTypeOfOption ==
-         Sd_GaaOptionsRef[LusMatchIndex + SD_ONE].enTypeOfOption) &&
-        (LddSoConId2 == Sd_GaaOptionsRef[LusMatchIndex + SD_ONE].ddLocalAddrSoConId) &&
-        (LucSoCon2Protocol ==
-         Sd_GaaOptionsRef[LusMatchIndex + SD_ONE].ucProtocol))
-    {
-      LucSoConIndex = (uint8)LusMatchIndex;
-    }
-    else
+    Sd_CheckOptionMatch(&LenTypeOfOption, &LddSoConId1, &LucSoCon1Protocol, 
+        LpNoOfOptionsTx, &LblMatch, &LusMatchIndex);
+
+    /* polyspace +3 RTE:UNR [Justified:Low] "This check will be true when
+      Lblmatch is equal to False  */
+    if (SD_FALSE == LblMatch)
     {
       LblAddToEnd = SD_TRUE;
     }
-  }
-  /* polyspace +3 RTE:UNR [Justified:Low] "This check will be true when
-    LblAddToEnd is equal to True  */
-  if (SD_TRUE == LblAddToEnd)
-  {
-    /* polyspace +3 RTE:UNR [Justified:Low] "This check will be true when
-      LpNoOfOptionsTx is grater than 16  */
-    if (*LpNoOfOptionsTx > SD_FIFTEEN)
-    {
-      *LpQueueOverflow = SD_TRUE;
-    }
     else
     {
-      Sd_GaaOptionsRef[*LpNoOfOptionsTx].enTypeOfOption = LenTypeOfOption;
-      Sd_GaaOptionsRef[*LpNoOfOptionsTx].ddLocalAddrSoConId = LddSoConId1;
-      Sd_GaaOptionsRef[*LpNoOfOptionsTx].ucProtocol = LucSoCon1Protocol;
-      /*polyspace +4 RTE:OBAI [Justified:Low] "Pointers with this orange flag are
+      /*polyspace +9 RTE:OBAI [Justified:Low] "Pointers with this orange flag are
          made sure that they are within their range by having necessary boundary
          checks in order to prevent them from being out of bounds." */
-      Sd_GaaOptionsRef[*LpNoOfOptionsTx + SD_ONE].enTypeOfOption =
-          LenTypeOfOption;
-      Sd_GaaOptionsRef[*LpNoOfOptionsTx + SD_ONE].ddLocalAddrSoConId =
-          LddSoConId2;
-      Sd_GaaOptionsRef[*LpNoOfOptionsTx + SD_ONE].ucProtocol =
-          LucSoCon2Protocol;
-      LucSoConIndex = *LpNoOfOptionsTx;
-      *LpNoOfOptionsTx = *LpNoOfOptionsTx + SD_TWO;
+      if ((LusMatchIndex < (uint16) *LpNoOfOptionsTx) &&
+          (LenTypeOfOption ==
+           Sd_GaaOptionsRef[LusMatchIndex + SD_ONE].enTypeOfOption) &&
+          (LddSoConId2 == Sd_GaaOptionsRef[LusMatchIndex + SD_ONE].ddLocalAddrSoConId) &&
+          (LucSoCon2Protocol ==
+           Sd_GaaOptionsRef[LusMatchIndex + SD_ONE].ucProtocol))
+      {
+        LucSoConIndex = (uint8)LusMatchIndex;
+      }
+      else
+      {
+        LblAddToEnd = SD_TRUE;
+      }
+    }
+    /* polyspace +3 RTE:UNR [Justified:Low] "This check will be true when
+      LblAddToEnd is equal to True  */
+    if (SD_TRUE == LblAddToEnd)
+    {
+      /* polyspace +3 RTE:UNR [Justified:Low] "This check will be true when
+        LpNoOfOptionsTx is grater than 16  */
+      if (*LpNoOfOptionsTx > SD_FIFTEEN)
+      {
+        *LpQueueOverflow = SD_TRUE;
+      }
+      else
+      {
+        Sd_GaaOptionsRef[*LpNoOfOptionsTx].enTypeOfOption = LenTypeOfOption;
+        Sd_GaaOptionsRef[*LpNoOfOptionsTx].ddLocalAddrSoConId = LddSoConId1;
+        Sd_GaaOptionsRef[*LpNoOfOptionsTx].ucProtocol = LucSoCon1Protocol;
+        /*polyspace +4 RTE:OBAI [Justified:Low] "Pointers with this orange flag are
+           made sure that they are within their range by having necessary boundary
+           checks in order to prevent them from being out of bounds." */
+        Sd_GaaOptionsRef[*LpNoOfOptionsTx + SD_ONE].enTypeOfOption =
+            LenTypeOfOption;
+        Sd_GaaOptionsRef[*LpNoOfOptionsTx + SD_ONE].ddLocalAddrSoConId =
+            LddSoConId2;
+        Sd_GaaOptionsRef[*LpNoOfOptionsTx + SD_ONE].ucProtocol =
+            LucSoCon2Protocol;
+        LucSoConIndex = *LpNoOfOptionsTx;
+        *LpNoOfOptionsTx = *LpNoOfOptionsTx + SD_TWO;
+      }
     }
   }
   return (LucSoConIndex);
@@ -1548,61 +1745,71 @@ static uint8 Sd_QueueFillOptionsRefDouble(
 *******************************************************************************/
 #define SD_START_SEC_CODE
 #include "Sd_MemMap.h"
+/* parasoft-begin-suppress CERT_C-API00-a-3 
+"Reason: Sd_Tx_c_Cert_REF_1" */
+/* parasoft-begin-suppress CERT_C-DCL00-b-3 
+  "Reason: Sd_Tx_c_Cert_REF_2" */
 static void Sd_QueueGenEntryIndexes(
     boolean LblConfigOptionPresent,
     uint8 LucConfigIndex,
     uint8 LucSoConIndex,
     uint8 LucNoOfValidIds,
     Sd_QueueType * LpQueueElement)
+/* parasoft-end-suppress CERT_C-API00-a-3 */
+/* parasoft-end-suppress CERT_C-DCL00-b-3 */
 {
   /* SWS_SD_00623
      SWS_SD_00187
-   SWS_SD_00188 */
+     SWS_SD_00188 */
   Sd_Entry1DataType *LpEntry1;
   Sd_Entry2DataType *LpEntry2;
   uint8 LucIndex1ToSend;
   uint8 LucIndex2ToSend;
   uint8 LucNoOfOptions1ToSend;
   uint8 LucNoOfOptions2ToSend;
-  /*polyspace +4 RTE:UNR [Justified:Low] "This If condition will be false
-  if LblConfigOptionPresent is Set as SD_TRUE" */
-  if (SD_TRUE == LblConfigOptionPresent)
+  /* Parameter validation for Parasoft CERT_C-API00-a-3 */
+  if (SD_NULL_PTR != LpQueueElement)
   {
-    LucIndex1ToSend = LucConfigIndex;
-    LucNoOfOptions1ToSend = SD_ONE;
-    LucIndex2ToSend = LucSoConIndex;
-    LucNoOfOptions2ToSend = LucNoOfValidIds;
-  }
-  /*polyspace +3 RTE:UNR [Justified:Low] "This Condition shall be True when
-LpClientServiceStatic->pUdpSoConGrp is Set other than SD_TRUE" */
-  else
-  { /*SWS_SD_00626
-      SWS_SD_00190 */
-    LucIndex1ToSend = LucSoConIndex;
-    LucNoOfOptions1ToSend = LucNoOfValidIds;
-    LucIndex2ToSend = SD_ZERO;
-    LucNoOfOptions2ToSend = SD_ZERO;
-  }
-  if ((SD_FIND_SERVICE_ENTRY ==
-       (LpQueueElement->stEntryData).enTypeOfEntry) ||
-      (SD_OFFER_SERVICE_ENTRY ==
-       (LpQueueElement->stEntryData).enTypeOfEntry) ||
-      (SD_STOP_OFFER_SERVICE_ENTRY ==
-       (LpQueueElement->stEntryData).enTypeOfEntry))
-  {
-    LpEntry1 = &((LpQueueElement->stEntryData).unEntryData.stEntry1);
-    LpEntry1->ucIndex1 = LucIndex1ToSend;
-    LpEntry1->ucNoOfOptions1 = LucNoOfOptions1ToSend;
-    LpEntry1->ucIndex2 = LucIndex2ToSend;
-    LpEntry1->ucNoOfOptions2 = LucNoOfOptions2ToSend;
-  }
-  else
-  {
-    LpEntry2 = &((LpQueueElement->stEntryData).unEntryData.stEntry2);
-    LpEntry2->ucIndex1 = LucIndex1ToSend;
-    LpEntry2->ucNoOfOptions1 = LucNoOfOptions1ToSend;
-    LpEntry2->ucIndex2 = LucIndex2ToSend;
-    LpEntry2->ucNoOfOptions2 = LucNoOfOptions2ToSend;
+    /*polyspace +4 RTE:UNR [Justified:Low] "This If condition will be false
+    if LblConfigOptionPresent is Set as SD_TRUE" */
+    if (SD_TRUE == LblConfigOptionPresent)
+    {
+      LucIndex1ToSend = LucConfigIndex;
+      LucNoOfOptions1ToSend = SD_ONE;
+      LucIndex2ToSend = LucSoConIndex;
+      LucNoOfOptions2ToSend = LucNoOfValidIds;
+    }
+    /*polyspace +3 RTE:UNR [Justified:Low] "This Condition shall be True when
+    LpClientServiceStatic->pUdpSoConGrp is Set other than SD_TRUE" */
+    else
+    { /*SWS_SD_00626
+        SWS_SD_00190 */
+      LucIndex1ToSend = LucSoConIndex;
+      LucNoOfOptions1ToSend = LucNoOfValidIds;
+      LucIndex2ToSend = SD_ZERO;
+      LucNoOfOptions2ToSend = SD_ZERO;
+    }
+    if ((SD_FIND_SERVICE_ENTRY ==
+         (LpQueueElement->stEntryData).enTypeOfEntry) ||
+        (SD_OFFER_SERVICE_ENTRY ==
+         (LpQueueElement->stEntryData).enTypeOfEntry) ||
+        (SD_STOP_OFFER_SERVICE_ENTRY ==
+         (LpQueueElement->stEntryData).enTypeOfEntry))
+    {
+      LpEntry1 = &((LpQueueElement->stEntryData).unEntryData.stEntry1);
+      LpEntry1->ucIndex1 = LucIndex1ToSend;
+      LpEntry1->ucNoOfOptions1 = LucNoOfOptions1ToSend;
+      LpEntry1->ucIndex2 = LucIndex2ToSend;
+      LpEntry1->ucNoOfOptions2 = LucNoOfOptions2ToSend;
+    }
+    else
+    {
+      LpEntry2 = &((LpQueueElement->stEntryData).unEntryData.stEntry2);
+      LpEntry2->ucIndex1 = LucIndex1ToSend;
+      LpEntry2->ucNoOfOptions1 = LucNoOfOptions1ToSend;
+      LpEntry2->ucIndex2 = LucIndex2ToSend;
+      LpEntry2->ucNoOfOptions2 = LucNoOfOptions2ToSend;
+    }
   }
 }
 #define SD_STOP_SEC_CODE
@@ -1646,57 +1853,68 @@ LpClientServiceStatic->pUdpSoConGrp is Set other than SD_TRUE" */
 #if (STD_ON == SD_CLIENT_CONFIGURED)
 #define SD_START_SEC_CODE
 #include "Sd_MemMap.h"
+/* parasoft-begin-suppress CERT_C-API00-a-3 
+"Reason: Sd_Tx_c_Cert_REF_1" */
+/* parasoft-begin-suppress CERT_C-DCL00-b-3 
+  "Reason: Sd_Tx_c_Cert_REF_2" */
 static uint8 Sd_TxGetOptionRefFind(
     const Sd_QueueType * LpQueueElement,
     const uint8* * LppConfigOption)
+/* parasoft-end-suppress CERT_C-API00-a-3 */
+/* parasoft-end-suppress CERT_C-DCL00-b-3 */
 {
   /* SWS_SD_00480 */
   Sd_ClientServiceStaticType const *LpClientServiceStatic;
   Sd_InstanceStaticType const *LpInstanceStatic;
-
-  uint8 LucReturnVal;
-
-#if (STD_ON == SD_PRE_COMPILE_SINGLE)
-  LpInstanceStatic = &Sd_GaaInstanceStatic[LpQueueElement->ucSdInstanceIndex];
-#else
-  LpInstanceStatic = ((Sd_GpConfigPtr->pInstanceStatic) + LpQueueElement->ucSdInstanceIndex);
-#endif
-
-#if (STD_ON == SD_PRE_COMPILE_SINGLE)
-  LpClientServiceStatic =
-      &Sd_GaaClientServiceStatic[LpQueueElement->ddGenericIndex];
-#else
-  LpClientServiceStatic =
-      ((Sd_GpConfigPtr->pSd_GaaClientServiceStatic) + LpQueueElement->ddGenericIndex);
-#endif
-
-  /*polyspace +15 RTE:IDP [Justified:Low] "Pointers with this orange flag are
-  made sure that they are within their range by having necessary boundary
-  checks in order to prevent them from being illegally dereferenced." */
-
-  if (SD_NULL_PTR == LpClientServiceStatic->pConfigOption)
-
-  /*polyspace +15 RTE:UNR [Justified:Low] "Pointers with this Grey flag are
-      made sure that they are within their range by having necessary boundary
-      checks in order to prevent them from being illegally dereferenced." */
+  const uint8 LucReturnVal = SD_ZERO;
+  /* Parameter validation for Parasoft CERT_C-API00-a-3 */
+  if ((SD_NULL_PTR == LpQueueElement) || (SD_NULL_PTR == LppConfigOption))
   {
-    if (SD_NULL_PTR == LpInstanceStatic->pConfigOption)
-    {
-      *LppConfigOption = SD_NULL_PTR;
-    }
-    else
-    {
-      *LppConfigOption = LpInstanceStatic->pConfigOption;
-    }
+    /* Do nothing */
   }
   else
   {
+#if (STD_ON == SD_PRE_COMPILE_SINGLE)
+    LpInstanceStatic = &Sd_GaaInstanceStatic[LpQueueElement->ucSdInstanceIndex];
+#else
+    LpInstanceStatic = &(Sd_GpConfigPtr->pInstanceStatic
+      [LpQueueElement->ucSdInstanceIndex]);
+#endif
 
-    *LppConfigOption = LpClientServiceStatic->pConfigOption;
+#if (STD_ON == SD_PRE_COMPILE_SINGLE)
+    LpClientServiceStatic =
+        &Sd_GaaClientServiceStatic[LpQueueElement->ddGenericIndex];
+#else
+    LpClientServiceStatic =
+        &(Sd_GpConfigPtr->pSd_GaaClientServiceStatic
+          [LpQueueElement->ddGenericIndex]);
+#endif
+
+    /*polyspace +15 RTE:IDP [Justified:Low] "Pointers with this orange flag are
+    made sure that they are within their range by having necessary boundary
+    checks in order to prevent them from being illegally dereferenced." */
+
+    if (SD_NULL_PTR == LpClientServiceStatic->pConfigOption)
+
+    /*polyspace +15 RTE:UNR [Justified:Low] "Pointers with this Grey flag are
+        made sure that they are within their range by having necessary boundary
+        checks in order to prevent them from being illegally dereferenced." */
+    {
+      if (SD_NULL_PTR == LpInstanceStatic->pConfigOption)
+      {
+        *LppConfigOption = SD_NULL_PTR;
+      }
+      else
+      {
+        *LppConfigOption = LpInstanceStatic->pConfigOption;
+      }
+    }
+    else
+    {
+      *LppConfigOption = LpClientServiceStatic->pConfigOption;
+    }
   }
-
-  LucReturnVal = SD_ZERO;
-  return (LucReturnVal);
+  return LucReturnVal;
 }
 #define SD_STOP_SEC_CODE
 #include "Sd_MemMap.h"
@@ -1753,6 +1971,10 @@ static uint8 Sd_TxGetOptionRefFind(
 #define SD_START_SEC_CODE
 #include "Sd_MemMap.h"
 /* polyspace-begin RTE:UNR [Justified:Low] "Refer Sd_c_Poly_REF_1"*/
+/* parasoft-begin-suppress CERT_C-API00-a-3 
+"Reason: Sd_Tx_c_Cert_REF_1" */
+/* parasoft-begin-suppress CERT_C-DCL00-b-3 
+  "Reason: Sd_Tx_c_Cert_REF_2" */
 static uint8 Sd_TxGetOptionRefOffer(
     const Sd_QueueType * LpQueueElement,
     SoAd_SoConIdType * LpSoConId1,
@@ -1761,133 +1983,135 @@ static uint8 Sd_TxGetOptionRefOffer(
     uint8 * LpProtocol2,
     const uint8* * LppConfigOption,
     Sd_TypeOfOptionsType * LpTypeOfOption)
+/* parasoft-end-suppress CERT_C-API00-a-3 */
+/* parasoft-end-suppress CERT_C-DCL00-b-3 */
 {
-
+  uint8 LucReturnVal;
   Sd_ServerServiceStaticType const *LpServerServiceStatic;
   Sd_InstanceStaticType const *LpInstanceStatic;
-
-  uint8 LucReturnVal;
-  /* SWS_SD_00672 */
-#if (STD_ON == SD_PRE_COMPILE_SINGLE)
-  LpInstanceStatic = &Sd_GaaInstanceStatic[LpQueueElement->ucSdInstanceIndex];
-#else
-  LpInstanceStatic = ((Sd_GpConfigPtr->pInstanceStatic) + LpQueueElement->ucSdInstanceIndex);
-#endif
-
-#if (STD_ON == SD_PRE_COMPILE_SINGLE)
-  LpServerServiceStatic = &Sd_GaaServerServiceStatic[LpQueueElement->ddGenericIndex];
-#else
-  LpServerServiceStatic = ((Sd_GpConfigPtr->pSd_GaaServerServiceStatic) + LpQueueElement->ddGenericIndex);
-#endif
-
-  /*polyspace +10 RTE:IDP [Justified:Low] "Pointers with this orange flag are
-  made sure that they are within their range by having necessary boundary
-  checks in order to prevent them from being illegally dereferenced." */
-  /* polyspace +10 RTE:UNR [Justified:Low] "This check will be true when
-                  LpServerServiceStatic->pTcpSoConGrp is not a null ptr " */
-  if (SD_NULL_PTR == LpServerServiceStatic->pTcpSoConGrp)
-
-  /* polyspace +4 RTE:UNR [Justified:Low] "This check will be true when
-                       LpServerServiceStatic->pTcpSoConGrp is not a null ptr " */
+  /* Parameter validation for Parasoft CERT_C-API00-a-3 */
+  if ((SD_NULL_PTR == LpQueueElement) ||
+      (SD_NULL_PTR == LpSoConId1) ||
+      (SD_NULL_PTR == LpProtocol1) ||
+      (SD_NULL_PTR == LpSoConId2) ||
+      (SD_NULL_PTR == LpProtocol2) ||
+      (SD_NULL_PTR == LppConfigOption) ||
+      (SD_NULL_PTR == LpTypeOfOption))
   {
-
-    if (SD_NULL_PTR == LpServerServiceStatic->pUdpSoConGrp)
-
-    {
-      LucReturnVal = SD_ZERO;
-    }
-    else
-    {
-      LucReturnVal = SD_ONE;
-
-      *LpSoConId1 = Sd_GaaSoConId
-          [LpServerServiceStatic->pUdpSoConGrp->usBaseSocketConIndex];
-
-      *LpProtocol1 = SD_PROTOCOL_UDP;
-    }
+    LucReturnVal = SD_ZERO;
   }
   else
   {
+    /* SWS_SD_00672 */
+#if (STD_ON == SD_PRE_COMPILE_SINGLE)
+    LpInstanceStatic = &Sd_GaaInstanceStatic[LpQueueElement->ucSdInstanceIndex];
+#else
+    LpInstanceStatic = &(Sd_GpConfigPtr->pInstanceStatic
+      [LpQueueElement->ucSdInstanceIndex]);
+#endif
 
-    /*polyspace +5 RTE:UNR [Justified:Low] "This Condition shall be true
-                        when  LpServerServiceStatic is Set as SD_NULL_PTR" */
-    /*polyspace +5 RTE:IDP [Justified:Low] "This Condition shall be true
-                   when  LpServerServiceStatic is Set as SD_NULL_PTR" */
-    if (SD_NULL_PTR == LpServerServiceStatic->pUdpSoConGrp)
+#if (STD_ON == SD_PRE_COMPILE_SINGLE)
+    LpServerServiceStatic = &Sd_GaaServerServiceStatic[LpQueueElement->ddGenericIndex];
+#else
+    LpServerServiceStatic = &(Sd_GpConfigPtr->pSd_GaaServerServiceStatic
+      [LpQueueElement->ddGenericIndex]);
+#endif
 
-    /*polyspace +5 RTE:IDP [Justified:Low] "This Condition shall be true
-  when  LpServerServiceStatic is Set as SD_NULL_PTR" */
-    /*polyspace +5 RTE:UNR [Justified:Low] "This Condition shall be true when
-                             LpServerServiceStatic is Set as SD_NULL_PTR" */
+    /*polyspace +10 RTE:IDP [Justified:Low] "Pointers with this orange flag are
+    made sure that they are within their range by having necessary boundary
+    checks in order to prevent them from being illegally dereferenced." */
+    /* polyspace +10 RTE:UNR [Justified:Low] "This check will be true when
+                    LpServerServiceStatic->pTcpSoConGrp is not a null ptr " */
+    if (SD_NULL_PTR == LpServerServiceStatic->pTcpSoConGrp)
     {
-      LucReturnVal = SD_ONE;
-
-      *LpSoConId1 = Sd_GaaSoConId
-          [LpServerServiceStatic->pTcpSoConGrp->usBaseSocketConIndex];
-
-      *LpProtocol1 = SD_PROTOCOL_TCP;
+      /* polyspace +4 RTE:UNR [Justified:Low] "This check will be true when
+                           LpServerServiceStatic->pTcpSoConGrp is not a null ptr " */
+      if (SD_NULL_PTR == LpServerServiceStatic->pUdpSoConGrp)
+      {
+        LucReturnVal = SD_ZERO;
+      }
+      else
+      {
+        LucReturnVal = SD_ONE;
+        *LpSoConId1 = Sd_GaaSoConId
+            [LpServerServiceStatic->pUdpSoConGrp->usBaseSocketConIndex];
+        *LpProtocol1 = SD_PROTOCOL_UDP;
+      }
     }
     else
     {
-      LucReturnVal = SD_TWO;
-      /*polyspace +10 RTE:OBAI [Justified:Low] "Pointers with this orange flag are
-  made sure that they are within their range by having necessary boundary
-  checks in order to prevent them from being out of bounds." */
-      *LpSoConId1 = Sd_GaaSoConId
-          [LpServerServiceStatic->pTcpSoConGrp->usBaseSocketConIndex];
-
-      *LpProtocol1 = SD_PROTOCOL_TCP;
-      /*polyspace +10 RTE:OBAI [Justified:Low] "Pointers with this orange flag are
+      /*polyspace +5 RTE:UNR [Justified:Low] "This Condition shall be true
+                              when  LpServerServiceStatic is Set as SD_NULL_PTR" */
+      /*polyspace +5 RTE:IDP [Justified:Low] "This Condition shall be true
+                     when  LpServerServiceStatic is Set as SD_NULL_PTR" */
+      if (SD_NULL_PTR == LpServerServiceStatic->pUdpSoConGrp)
+      {
+        /*polyspace +5 RTE:IDP [Justified:Low] "This Condition shall be true
+      when  LpServerServiceStatic is Set as SD_NULL_PTR" */
+        /*polyspace +5 RTE:UNR [Justified:Low] "This Condition shall be true when
+                                 LpServerServiceStatic is Set as SD_NULL_PTR" */
+        LucReturnVal = SD_ONE;
+        *LpSoConId1 = Sd_GaaSoConId
+            [LpServerServiceStatic->pTcpSoConGrp->usBaseSocketConIndex];
+        *LpProtocol1 = SD_PROTOCOL_TCP;
+      }
+      else
+      {
+        LucReturnVal = SD_TWO;
+        /*polyspace +10 RTE:OBAI [Justified:Low] "Pointers with this orange flag are
         made sure that they are within their range by having necessary boundary
         checks in order to prevent them from being out of bounds." */
-      *LpSoConId2 = Sd_GaaSoConId
-          [LpServerServiceStatic->pUdpSoConGrp->usBaseSocketConIndex];
-
-      *LpProtocol2 = SD_PROTOCOL_UDP;
+        *LpSoConId1 = Sd_GaaSoConId
+            [LpServerServiceStatic->pTcpSoConGrp->usBaseSocketConIndex];
+        *LpProtocol1 = SD_PROTOCOL_TCP;
+        /*polyspace +10 RTE:OBAI [Justified:Low] "Pointers with this orange flag are
+          made sure that they are within their range by having necessary boundary
+          checks in order to prevent them from being out of bounds." */
+        *LpSoConId2 = Sd_GaaSoConId
+            [LpServerServiceStatic->pUdpSoConGrp->usBaseSocketConIndex];
+        *LpProtocol2 = SD_PROTOCOL_UDP;
+      }
     }
-  }
-  /* SWS_SD_00210 */
-  /*polyspace +11 RTE:UNR [Justified:Low] "This Condition shall be true
-                     when  LpInstanceStatic->blDomainIpv4 is Set as SD_FALSE" */
-  /*polyspace +10 RTE:IDP [Justified:Low] "This Condition shall be true
-                     when  LpInstanceStatic->blDomainIpv4 is Set as SD_FALSE" */
-  if (SD_TRUE == LpInstanceStatic->blDomainIpv4)
-  {
-    *LpTypeOfOption = SD_IPV4_ENDPOINT_OPTION;
-  }
-  else
-  {
-    *LpTypeOfOption = SD_IPV6_ENDPOINT_OPTION;
-  }
-
-  /* polyspace +7 RTE:UNR [Justified:Low] "This check will be true when
-       (LpServerServiceStatic->stServerStaticFlag).blAutoAvaliable)
-       is not equal to SD_TRUE " */
-  /*polyspace +10 RTE:IDP [Justified:Low] "This Condition shall be True
-              when  LpServerServiceStatic->pConfigOption is Set as SD_NULL_PTR" */
-  if (SD_NULL_PTR == LpServerServiceStatic->pConfigOption)
-
-  {
-    /*polyspace +2 RTE:IDP [Justified:Low] "This Condition shall be True
-           when  LpServerServiceStatic->pConfigOption is Set as SD_NULL_PTR" */
-    if (SD_NULL_PTR == LpInstanceStatic->pConfigOption)
+    /* SWS_SD_00210 */
+    /*polyspace +11 RTE:UNR [Justified:Low] "This Condition shall be true
+                       when  LpInstanceStatic->blDomainIpv4 is Set as SD_FALSE" */
+    /*polyspace +10 RTE:IDP [Justified:Low] "This Condition shall be true
+                       when  LpInstanceStatic->blDomainIpv4 is Set as SD_FALSE" */
+    if (SD_TRUE == LpInstanceStatic->blDomainIpv4)
     {
-      *LppConfigOption = SD_NULL_PTR;
+      *LpTypeOfOption = SD_IPV4_ENDPOINT_OPTION;
     }
-    /*polyspace +10 RTE:IDP [Justified:Low] "This Condition shall be True
- when  LpServerServiceStatic->pConfigOption is not Set as SD_NULL_PTR" */
     else
     {
-      *LppConfigOption = LpInstanceStatic->pConfigOption;
+      *LpTypeOfOption = SD_IPV6_ENDPOINT_OPTION;
+    }
+
+    /* polyspace +7 RTE:UNR [Justified:Low] "This check will be true when
+         (LpServerServiceStatic->stServerStaticFlag).blAutoAvaliable)
+         is not equal to SD_TRUE " */
+    /*polyspace +10 RTE:IDP [Justified:Low] "This Condition shall be True
+                when  LpServerServiceStatic->pConfigOption is Set as SD_NULL_PTR" */
+    if (SD_NULL_PTR == LpServerServiceStatic->pConfigOption)
+    {
+      /*polyspace +2 RTE:IDP [Justified:Low] "This Condition shall be True
+             when  LpServerServiceStatic->pConfigOption is Set as SD_NULL_PTR" */
+      if (SD_NULL_PTR == LpInstanceStatic->pConfigOption)
+      {
+        *LppConfigOption = SD_NULL_PTR;
+      }
+      /*polyspace +10 RTE:IDP [Justified:Low] "This Condition shall be True
+     when  LpServerServiceStatic->pConfigOption is not Set as SD_NULL_PTR" */
+      else
+      {
+        *LppConfigOption = LpInstanceStatic->pConfigOption;
+      }
+    }
+    else
+    {
+      *LppConfigOption = LpServerServiceStatic->pConfigOption;
     }
   }
-  else
-  {
-
-    *LppConfigOption = LpServerServiceStatic->pConfigOption;
-  }
-
-  return (LucReturnVal);
+  return LucReturnVal;
 }
 /* polyspace-end RTE:UNR [Justified:Low] "Refer Sd_c_Poly_REF_1"*/
 #define SD_STOP_SEC_CODE
@@ -1946,6 +2170,10 @@ static uint8 Sd_TxGetOptionRefOffer(
 #define SD_START_SEC_CODE
 #include "Sd_MemMap.h"
 /* polyspace-begin RTE:UNR [Justified:Low] "Refer Sd_c_Poly_REF_1"*/
+/* parasoft-begin-suppress CERT_C-API00-a-3 
+"Reason: Sd_Tx_c_Cert_REF_1" */
+/* parasoft-begin-suppress CERT_C-DCL00-b-3 
+  "Reason: Sd_Tx_c_Cert_REF_2" */
 static uint8 Sd_TxGetOptionRefSubscribe(
     const Sd_QueueType * LpQueueElement,
     SoAd_SoConIdType * LpSoConId1,
@@ -1954,6 +2182,8 @@ static uint8 Sd_TxGetOptionRefSubscribe(
     uint8 * LpProtocol2,
     const uint8* * LppConfigOption,
     Sd_TypeOfOptionsType * LpTypeOfOption)
+/* parasoft-end-suppress CERT_C-API00-a-3 */
+/* parasoft-end-suppress CERT_C-DCL00-b-3 */
 {
 #if (STD_ON == SD_CLIENT_CONFIGURED)
   Sd_InstanceStaticType const *LpInstanceStatic;
@@ -1963,176 +2193,190 @@ static uint8 Sd_TxGetOptionRefSubscribe(
 #endif
 
   uint8 LucReturnVal;
-  /*polyspace +3 RTE:IDP [Justified:Low] "Pointers with this orange flag are
-    made sure that they are within their range by having necessary boundary
-    checks in order to prevent them from being illegally dereferenced." */
-#if (STD_ON == SD_PRE_COMPILE_SINGLE)
-  LpInstanceStatic = &Sd_GaaInstanceStatic[LpQueueElement->ucSdInstanceIndex];
-#else
-  LpInstanceStatic = ((Sd_GpConfigPtr->pInstanceStatic) + LpQueueElement->ucSdInstanceIndex);
-#endif
 
-#if (STD_ON == SD_PRE_COMPILE_SINGLE)
-  LpConsumedEvGrpStatic =
-      &Sd_GaaConsumedEvGrpStatic[LpQueueElement->ddGenericIndex];
-#else
-  LpConsumedEvGrpStatic = ((Sd_GpConfigPtr->pSd_GaaConsumedEvGrpStatic) + LpQueueElement->ddGenericIndex);
-#endif
+  LucReturnVal = SD_ZERO;
 
-  /*polyspace +15 RTE:IDP [Justified:Low] "Pointers with this orange flag are
-  made sure that they are within their range by having necessary boundary
-  checks in order to prevent them from being illegally dereferenced." */
-  /*polyspace +11 RTE:UNR [Justified:Low] "This Condition shall be false when
-   LpConsumedEvGrpStatic->usClientServiceIndex  is Set as SD_NO_OF_CLIENT_SERVICES
-   " */
-  if (LpConsumedEvGrpStatic->usClientServiceIndex < SD_NO_OF_CLIENT_SERVICES)
+  /* Parameter validation for Parasoft CERT_C-API00-a-3 */
+  if ((SD_NULL_PTR == LpQueueElement) ||
+      (SD_NULL_PTR == LpSoConId1) ||
+      (SD_NULL_PTR == LpProtocol1) ||
+      (SD_NULL_PTR == LpSoConId2) ||
+      (SD_NULL_PTR == LpProtocol2) ||
+      (SD_NULL_PTR == LppConfigOption) ||
+      (SD_NULL_PTR == LpTypeOfOption))
   {
-#if (STD_ON == SD_PRE_COMPILE_SINGLE)
-    LpClientServiceStatic =
-        &Sd_GaaClientServiceStatic[LpConsumedEvGrpStatic->usClientServiceIndex];
-#else
-    LpClientServiceStatic =
-        ((Sd_GpConfigPtr->pSd_GaaClientServiceStatic) + LpConsumedEvGrpStatic->usClientServiceIndex);
-#endif
+    /* Do nothing */
   }
-  LpClientService = &Sd_GaaClientService[LpConsumedEvGrpStatic->usClientServiceIndex];
-
-  /*polyspace +11 RTE:UNR [Justified:Low] "This Condition shall be False when
-                  LpClientServiceStatic->pTcpSoConGrp  is  Set as NULL_PTR " */
-  /*polyspace +15 RTE:IDP [Justified:Low] "This Condition shall be True when
-                  LpServerServiceStatic->pConfigOption is Set as SD_NULL_PTR" */
-  if (SD_NULL_PTR == LpClientServiceStatic->pTcpSoConGrp)
-
-  {
-
-    /* polyspace +5 RTE:UNR [Justified:Low] "This condition shall
-          be false when the blDomainIpv4 is Set to SD_FALSE.*/
-    if (SD_NULL_PTR == LpClientServiceStatic->pUdpSoConGrp)
-
-    {
-      LucReturnVal = SD_ZERO;
-    }
-    else
-    {
-      LucReturnVal = SD_ONE;
-      /*polyspace +10 RTE:OBAI [Justified:Low] "Pointers with this orange flag
-     are made sure that they are within their range by having necessary boundary
-       checks in order to prevent them from being out of bounds." */
-      /*polyspace +5 RTE:UNR [Justified:Low] "This Condition shall be True when
-                      SD_NO_OF_SOCKET_CONNECTIONS is less than SoConIndexUdp  " */
-      if (LpClientService->ddOfferSoConIndexUdp < SD_NO_OF_SOCKET_CONNECTIONS)
-      {
-        *LpSoConId1 = Sd_GaaSoConId[LpClientService->ddOfferSoConIndexUdp];
-      }
-      *LpProtocol1 = SD_PROTOCOL_UDP;
-    }
-  }
-  /*polyspace +8 RTE:UNR [Justified:Low] "This Condition shall be True when
-               LpClientServiceStatic->pUdpSoConGrp is Set as SD_NULL_PTR" */
   else
   {
+    /*polyspace +3 RTE:IDP [Justified:Low] "Pointers with this orange flag are
+      made sure that they are within their range by having necessary boundary
+      checks in order to prevent them from being illegally dereferenced." */
+#if (STD_ON == SD_PRE_COMPILE_SINGLE)
+    LpInstanceStatic = &Sd_GaaInstanceStatic[LpQueueElement->ucSdInstanceIndex];
+#else
+    LpInstanceStatic = &(Sd_GpConfigPtr->pInstanceStatic
+      [LpQueueElement->ucSdInstanceIndex]);
+#endif
 
-    if (SD_NULL_PTR == LpClientServiceStatic->pUdpSoConGrp)
+#if (STD_ON == SD_PRE_COMPILE_SINGLE)
+    LpConsumedEvGrpStatic =
+        &Sd_GaaConsumedEvGrpStatic[LpQueueElement->ddGenericIndex];
+#else
+    LpConsumedEvGrpStatic = &(Sd_GpConfigPtr->pSd_GaaConsumedEvGrpStatic
+      [LpQueueElement->ddGenericIndex]);
+#endif
 
-    {
-      LucReturnVal = SD_ONE;
-      /*polyspace +10 RTE:OBAI [Justified:Low] "Pointers with this orange flag are
-         made sure that they are within their range by having necessary boundary
-         checks in order to prevent them from being out of bounds." */
-      if (LpClientService->ddOfferSoConIndexTcp < SD_NO_OF_SOCKET_CONNECTIONS)
-      {
-        *LpSoConId1 = Sd_GaaSoConId[LpClientService->ddOfferSoConIndexTcp];
-      }
-
-      *LpProtocol1 = SD_PROTOCOL_TCP;
-    }
-    else
-    {
-      LucReturnVal = SD_TWO;
-      /*polyspace +10 RTE:OBAI [Justified:Low] "Pointers with this orange flag are
-          made sure that they are within their range by having necessary boundary
-           checks in order to prevent them from being out of bounds." */
-      if (LpClientService->ddOfferSoConIndexTcp < SD_NO_OF_SOCKET_CONNECTIONS)
-      {
-        *LpSoConId1 = Sd_GaaSoConId[LpClientService->ddOfferSoConIndexTcp];
-      }
-      *LpProtocol1 = SD_PROTOCOL_TCP;
-      /*polyspace +10 RTE:OBAI [Justified:Low] "Pointers with this orange flag are
-         made sure that they are within their range by having necessary boundary
-         checks in order to prevent them from being out of bounds." */
-      if (LpClientService->ddOfferSoConIndexUdp < SD_NO_OF_SOCKET_CONNECTIONS)
-      {
-        *LpSoConId2 = Sd_GaaSoConId[LpClientService->ddOfferSoConIndexUdp];
-      }
-      *LpProtocol2 = SD_PROTOCOL_UDP;
-    }
-  }
-  /*polyspace +10 RTE:UNR [Justified:Low] "Pointers with this Grey Flag are
+    /*polyspace +15 RTE:IDP [Justified:Low] "Pointers with this orange flag are
     made sure that they are within their range by having necessary boundary
     checks in order to prevent them from being illegally dereferenced." */
-  /*polyspace +4 RTE:IDP [Justified:Low] "Pointers with this orange flag are
-    made sure that they are within their range by having necessary boundary
-    checks in order to prevent them from being illegally dereferenced." */
-  if (SD_TRUE == LpInstanceStatic->blDomainIpv4)
-  {
-    *LpTypeOfOption = SD_IPV4_ENDPOINT_OPTION;
-  }
-
-  else
-  {
-    *LpTypeOfOption = SD_IPV6_ENDPOINT_OPTION;
-  }
-  if (SD_SERVICE_ID_TYPE_TWO_ENTRY_CHECK == LpClientServiceStatic->usServiceId)
-  {
-    /* Determine Config option pointer */
-    if (SD_NULL_PTR == LpClientServiceStatic->pConfigOption)
+    /*polyspace +11 RTE:UNR [Justified:Low] "This Condition shall be false when
+     LpConsumedEvGrpStatic->usClientServiceIndex  is Set as SD_NO_OF_CLIENT_SERVICES
+     " */
+    if (LpConsumedEvGrpStatic->usClientServiceIndex < SD_NO_OF_CLIENT_SERVICES)
     {
-      /* If Client option is not present, check for hostname */
-      if (SD_NULL_PTR == LpInstanceStatic->pConfigOption)
+#if (STD_ON == SD_PRE_COMPILE_SINGLE)
+      LpClientServiceStatic =
+          &Sd_GaaClientServiceStatic[LpConsumedEvGrpStatic->usClientServiceIndex];
+#else
+      LpClientServiceStatic =
+          &(Sd_GpConfigPtr->pSd_GaaClientServiceStatic
+            [LpConsumedEvGrpStatic->usClientServiceIndex]);
+#endif
+    }
+
+    if (SD_NULL_PTR != LpClientServiceStatic)
+    {
+      LpClientService = &Sd_GaaClientService[LpConsumedEvGrpStatic->usClientServiceIndex];
+
+      /*polyspace +11 RTE:UNR [Justified:Low] "This Condition shall be False when
+                      LpClientServiceStatic->pTcpSoConGrp  is  Set as NULL_PTR " */
+      /*polyspace +15 RTE:IDP [Justified:Low] "This Condition shall be True when
+                      LpServerServiceStatic->pConfigOption is Set as SD_NULL_PTR" */
+      if (SD_NULL_PTR == LpClientServiceStatic->pTcpSoConGrp)
       {
-        *LppConfigOption = SD_NULL_PTR;
+        /* polyspace +5 RTE:UNR [Justified:Low] "This condition shall
+              be false when the blDomainIpv4 is Set to SD_FALSE.*/
+        if (SD_NULL_PTR == LpClientServiceStatic->pUdpSoConGrp)
+        {
+          LucReturnVal = SD_ZERO;
+        }
+        else
+        {
+          LucReturnVal = SD_ONE;
+          /*polyspace +10 RTE:OBAI [Justified:Low] "Pointers with this orange flag
+        are made sure that they are within their range by having necessary boundary
+          checks in order to prevent them from being out of bounds." */
+          /*polyspace +5 RTE:UNR [Justified:Low] "This Condition shall be True when
+                          SD_NO_OF_SOCKET_CONNECTIONS is less than SoConIndexUdp  " */
+          if (LpClientService->ddOfferSoConIndexUdp < SD_NO_OF_SOCKET_CONNECTIONS)
+          {
+            *LpSoConId1 = Sd_GaaSoConId[LpClientService->ddOfferSoConIndexUdp];
+          }
+          *LpProtocol1 = SD_PROTOCOL_UDP;
+        }
+      }
+      /*polyspace +8 RTE:UNR [Justified:Low] "This Condition shall be True when
+                  LpClientServiceStatic->pUdpSoConGrp is Set as SD_NULL_PTR" */
+      else
+      {
+        if (SD_NULL_PTR == LpClientServiceStatic->pUdpSoConGrp)
+        {
+          LucReturnVal = SD_ONE;
+          /*polyspace +10 RTE:OBAI [Justified:Low] "Pointers with this orange flag are
+            made sure that they are within their range by having necessary boundary
+            checks in order to prevent them from being out of bounds." */
+          if (LpClientService->ddOfferSoConIndexTcp < SD_NO_OF_SOCKET_CONNECTIONS)
+          {
+            *LpSoConId1 = Sd_GaaSoConId[LpClientService->ddOfferSoConIndexTcp];
+          }
+          *LpProtocol1 = SD_PROTOCOL_TCP;
+        }
+        else
+        {
+          LucReturnVal = SD_TWO;
+          /*polyspace +10 RTE:OBAI [Justified:Low] "Pointers with this orange flag are
+              made sure that they are within their range by having necessary boundary
+              checks in order to prevent them from being out of bounds." */
+          if (LpClientService->ddOfferSoConIndexTcp < SD_NO_OF_SOCKET_CONNECTIONS)
+          {
+            *LpSoConId1 = Sd_GaaSoConId[LpClientService->ddOfferSoConIndexTcp];
+          }
+          *LpProtocol1 = SD_PROTOCOL_TCP;
+          /*polyspace +10 RTE:OBAI [Justified:Low] "Pointers with this orange flag are
+            made sure that they are within their range by having necessary boundary
+            checks in order to prevent them from being out of bounds." */
+          if (LpClientService->ddOfferSoConIndexUdp < SD_NO_OF_SOCKET_CONNECTIONS)
+          {
+            *LpSoConId2 = Sd_GaaSoConId[LpClientService->ddOfferSoConIndexUdp];
+          }
+          *LpProtocol2 = SD_PROTOCOL_UDP;
+        }
+      }
+      /*polyspace +10 RTE:UNR [Justified:Low] "Pointers with this Grey Flag are
+        made sure that they are within their range by having necessary boundary
+        checks in order to prevent them from being illegally dereferenced." */
+      /*polyspace +4 RTE:IDP [Justified:Low] "Pointers with this orange flag are
+        made sure that they are within their range by having necessary boundary
+        checks in order to prevent them from being illegally dereferenced." */
+      if (SD_TRUE == LpInstanceStatic->blDomainIpv4)
+      {
+        *LpTypeOfOption = SD_IPV4_ENDPOINT_OPTION;
       }
       else
       {
-        *LppConfigOption = LpInstanceStatic->pConfigOption;
+        *LpTypeOfOption = SD_IPV6_ENDPOINT_OPTION;
+      }
+      if (SD_SERVICE_ID_TYPE_TWO_ENTRY_CHECK == LpClientServiceStatic->usServiceId)
+      {
+        /* Determine Config option pointer */
+        if (SD_NULL_PTR == LpClientServiceStatic->pConfigOption)
+        {
+          /* If Client option is not present, check for hostname */
+          if (SD_NULL_PTR == LpInstanceStatic->pConfigOption)
+          {
+            *LppConfigOption = SD_NULL_PTR;
+          }
+          else
+          {
+            *LppConfigOption = LpInstanceStatic->pConfigOption;
+          }
+        }
+        else
+        {
+          *LppConfigOption = LpClientServiceStatic->pConfigOption;
+        }
+      }
+      else
+      {
+        *LppConfigOption = SD_NULL_PTR;
+      }
+      /*polyspace +5 RTE:UNR [Justified:Low] "This Condition shall be True
+      when  LpClientServiceStatic->pConfigOption is Set as SD_NULL_PTR" */
+      /*polyspace +5 RTE:IDP [Justified:Low] "This Condition shall be True
+      when  LpClientServiceStatic->pConfigOption is Set as SD_NULL_PTR" */
+      if (SD_NULL_PTR == LpClientServiceStatic->pConfigOption)
+      /*polyspace +5 RTE:UNR [Justified:Low] "This Condition shall be True
+      when  LpClientServiceStatic->pConfigOption is Set as SD_NULL_PTR" */
+      {
+        if (SD_NULL_PTR == LpInstanceStatic->pConfigOption)
+        {
+          *LppConfigOption = SD_NULL_PTR;
+        }
+        else
+        {
+          *LppConfigOption = LpInstanceStatic->pConfigOption;
+        }
+      }
+      /*polyspace +5 RTE:UNR [Justified:Low] "This Condition shall be True
+      when  LpClientServiceStatic->pConfigOption is Set other than SD_NULL_PTR" */
+      else
+      {
+        *LppConfigOption = LpClientServiceStatic->pConfigOption;
       }
     }
-    else
-    {
-      *LppConfigOption = LpClientServiceStatic->pConfigOption;
-    }
   }
-  else
-  {
-    *LppConfigOption = SD_NULL_PTR;
-  }
-
-  /*polyspace +5 RTE:UNR [Justified:Low] "This Condition shall be True
-when  LpClientServiceStatic->pConfigOption is Set as SD_NULL_PTR" */
-  /*polyspace +5 RTE:IDP [Justified:Low] "This Condition shall be True
-  when  LpClientServiceStatic->pConfigOption is Set as SD_NULL_PTR" */
-  if (SD_NULL_PTR == LpClientServiceStatic->pConfigOption)
-  /*polyspace +5 RTE:UNR [Justified:Low] "This Condition shall be True
-  when  LpClientServiceStatic->pConfigOption is Set as SD_NULL_PTR" */
-  {
-    if (SD_NULL_PTR == LpInstanceStatic->pConfigOption)
-    {
-      *LppConfigOption = SD_NULL_PTR;
-    }
-    else
-    {
-      *LppConfigOption = LpInstanceStatic->pConfigOption;
-    }
-  }
-  /*polyspace +5 RTE:UNR [Justified:Low] "This Condition shall be True
-when  LpClientServiceStatic->pConfigOption is Set other than SD_NULL_PTR" */
-  else
-  {
-
-    *LppConfigOption = LpClientServiceStatic->pConfigOption;
-  }
-
-  return (LucReturnVal);
+  return LucReturnVal;
 }
 /* polyspace-end RTE:UNR [Justified:Low] "Refer Sd_c_Poly_REF_1"*/
 #define SD_STOP_SEC_CODE
@@ -2183,126 +2427,143 @@ when  LpClientServiceStatic->pConfigOption is Set other than SD_NULL_PTR" */
 #define SD_START_SEC_CODE
 #include "Sd_MemMap.h"
 /* polyspace-begin RTE:UNR [Justified:Low] "Refer Sd_c_Poly_REF_1"*/
+/* parasoft-begin-suppress CERT_C-API00-a-3 
+"Reason: Sd_Tx_c_Cert_REF_1" */
+/* parasoft-begin-suppress CERT_C-DCL00-b-3 
+  "Reason: Sd_Tx_c_Cert_REF_2" */
 static uint8 Sd_TxGetOptionRefSubscribeAck(
     const Sd_QueueType * LpQueueElement,
-    SoAd_SoConIdType * LpSoConId1,
-    uint8 * LpProtocol1,
-    const uint8* * LppConfigOption,
-    Sd_TypeOfOptionsType * LpTypeOfOption)
+    SoAd_SoConIdType * const LpSoConId1,
+    uint8 * const LpProtocol1,
+    const uint8* * const LppConfigOption,
+    Sd_TypeOfOptionsType * const LpTypeOfOption)
+/* parasoft-end-suppress CERT_C-API00-a-3 */
+/* parasoft-end-suppress CERT_C-DCL00-b-3 */
 {
+  uint8 LucReturnVal;
   Sd_EvHandlerStaticType const *LpEvHandlerStatic;
   Sd_InstanceStaticType const *LpInstanceStatic;
   Sd_ServerServiceStaticType const *LpServerServiceStatic;
-
-  uint8 LucReturnVal;
-  /* SWS_SD_00480 */
-#if (STD_ON == SD_PRE_COMPILE_SINGLE)
-  LpInstanceStatic = &Sd_GaaInstanceStatic[LpQueueElement->ucSdInstanceIndex];
-#else
-  LpInstanceStatic = ((Sd_GpConfigPtr->pInstanceStatic) + LpQueueElement->ucSdInstanceIndex);
-#endif
-
-#if (STD_ON == SD_PRE_COMPILE_SINGLE)
-  LpEvHandlerStatic = &Sd_GaaEvHandlerStatic[LpQueueElement->ddGenericIndex];
-#else
-  LpEvHandlerStatic = ((Sd_GpConfigPtr->pSd_GaaEvHandlerStatic) + (LpQueueElement->ddGenericIndex));
-#endif
-  /*polyspace +5 RTE:IDP [Justified:Low] "Pointers with this orange flag are
-    made sure that they are within their range by having necessary boundary
-    checks in order to prevent them from being illegally dereferenced." */
-
-#if (STD_ON == SD_PRE_COMPILE_SINGLE)
-  /*polyspace +5 RTE:IDP [Justified:Low] "Pointers with this orange flag are
-   made sure that they are within their range by having necessary boundary
-   checks in order to prevent them from being illegally dereferenced." */
-  LpServerServiceStatic = &Sd_GaaServerServiceStatic[(LpEvHandlerStatic->usServerServiceIndex)];
-#else
-  /*polyspace +5 RTE:IDP [Justified:Low] "Pointers with this orange flag are
-   made sure that they are within their range by having necessary boundary
-   checks in order to prevent them from being illegally dereferenced." */
-  LpServerServiceStatic = ((Sd_GpConfigPtr->pSd_GaaServerServiceStatic) + (LpEvHandlerStatic->usServerServiceIndex));
-#endif
-  /* SWS_SD_00659
-     SWS_SD_00660  */
-  /*polyspace +10 RTE:UNR [Justified:Low] "Pointers with this Grey flag are
-   made sure that they are within their range by having necessary boundary
-   checks in order to prevent them from being illegally dereferenced." */
-  /*polyspace +5 RTE:IDP [Justified:Low] "Pointers with this orange flag are
-    made sure that they are within their range by having necessary boundary
-    checks in order to prevent them from being illegally dereferenced." */
-  if (SD_TRUE == ((LpEvHandlerStatic->stEvHandlerStaticFlag).blMulticastEventSoConPresent))
+/* SWS_SD_00480 */
+  /* Parameter validation for Parasoft CERT_C-API00-a-3 */
+  if ((SD_NULL_PTR == LpQueueElement) ||
+      (SD_NULL_PTR == LpSoConId1) ||
+      (SD_NULL_PTR == LpProtocol1) ||
+      (SD_NULL_PTR == LppConfigOption) ||
+      (SD_NULL_PTR == LpTypeOfOption))
   {
-    LucReturnVal = SD_ONE;
-    *LpSoConId1 = (LpEvHandlerStatic->ddMulticastEventSoConId);
-    *LpProtocol1 = SD_PROTOCOL_UDP;
-  }
-  /*polyspace +10 RTE:UNR [Justified:Low] "Pointers with this Grey flag are
-   made sure that they are within their range by having necessary boundary
-   checks in order to prevent them from being illegally dereferenced." */
-  else
-  {
+    /* If any pointer is NULL, do not proceed, return SD_ZERO at end */
     LucReturnVal = SD_ZERO;
   }
-  /*polyspace +4 RTE:IDP [Justified:Low] "Pointers with this orange flag are
-    made sure that they are within their range by having necessary boundary
-    checks in order to prevent them from being illegally dereferenced." */
-  if (SD_TRUE == LpInstanceStatic->blDomainIpv4)
-  {
-    *LpTypeOfOption = SD_IPV4_MULTICAST_OPTION;
-  }
-  /*polyspace +7 RTE:UNR [Justified:Low] "This Condition shall be false
-  when  LpInstanceStatic->blDomainIpv4is Set as SD_FALSE" */
   else
   {
-    *LpTypeOfOption = SD_IPV6_MULTICAST_OPTION;
-  }
+    #if (STD_ON == SD_PRE_COMPILE_SINGLE)
+      LpInstanceStatic = &Sd_GaaInstanceStatic[LpQueueElement->ucSdInstanceIndex];
+    #else
+      LpInstanceStatic = &(Sd_GpConfigPtr->pInstanceStatic
+        [LpQueueElement->ucSdInstanceIndex]);
+    #endif
 
-  if (SD_SERVICE_ID_TYPE_TWO_ENTRY_CHECK == LpServerServiceStatic->usServiceId)
-  {
-    /* Determine Config option pointer */
-    if (SD_NULL_PTR == LpEvHandlerStatic->pConfigOption)
-    {
-      /* If server option is not present, check for hostname */
-      if (SD_NULL_PTR == LpInstanceStatic->pConfigOption)
+    #if (STD_ON == SD_PRE_COMPILE_SINGLE)
+      LpEvHandlerStatic = &Sd_GaaEvHandlerStatic[LpQueueElement->ddGenericIndex];
+    #else
+      LpEvHandlerStatic = &(Sd_GpConfigPtr->pSd_GaaEvHandlerStatic
+        [LpQueueElement->ddGenericIndex]);
+    #endif
+
+    #if (STD_ON == SD_PRE_COMPILE_SINGLE)
+      /*polyspace +5 RTE:IDP [Justified:Low] "Pointers with this orange flag are
+      made sure that they are within their range by having necessary boundary
+      checks in order to prevent them from being illegally dereferenced." */
+      LpServerServiceStatic = &Sd_GaaServerServiceStatic[(LpEvHandlerStatic->usServerServiceIndex)];
+    #else
+      /*polyspace +5 RTE:IDP [Justified:Low] "Pointers with this orange flag are
+      made sure that they are within their range by having necessary boundary
+      checks in order to prevent them from being illegally dereferenced." */
+      LpServerServiceStatic = &(Sd_GpConfigPtr->pSd_GaaServerServiceStatic
+        [LpEvHandlerStatic->usServerServiceIndex]);
+    #endif
+      /* SWS_SD_00659
+        SWS_SD_00660  */
+      /*polyspace +10 RTE:UNR [Justified:Low] "Pointers with this Grey flag are
+      made sure that they are within their range by having necessary boundary
+      checks in order to prevent them from being illegally dereferenced." */
+      /*polyspace +5 RTE:IDP [Justified:Low] "Pointers with this orange flag are
+        made sure that they are within their range by having necessary boundary
+        checks in order to prevent them from being illegally dereferenced." */
+      if (SD_TRUE == ((LpEvHandlerStatic->stEvHandlerStaticFlag).blMulticastEventSoConPresent))
       {
-        *LppConfigOption = SD_NULL_PTR;
+        LucReturnVal = SD_ONE;
+        *LpSoConId1 = (LpEvHandlerStatic->ddMulticastEventSoConId);
+        *LpProtocol1 = SD_PROTOCOL_UDP;
+      }
+      /*polyspace +10 RTE:UNR [Justified:Low] "Pointers with this Grey flag are
+      made sure that they are within their range by having necessary boundary
+      checks in order to prevent them from being illegally dereferenced." */
+      else
+      {
+        LucReturnVal = SD_ZERO;
+      }
+      /*polyspace +4 RTE:IDP [Justified:Low] "Pointers with this orange flag are
+        made sure that they are within their range by having necessary boundary
+        checks in order to prevent them from being illegally dereferenced." */
+      if (SD_TRUE == LpInstanceStatic->blDomainIpv4)
+      {
+        *LpTypeOfOption = SD_IPV4_MULTICAST_OPTION;
+      }
+      /*polyspace +7 RTE:UNR [Justified:Low] "This Condition shall be false
+      when  LpInstanceStatic->blDomainIpv4is Set as SD_FALSE" */
+      else
+      {
+        *LpTypeOfOption = SD_IPV6_MULTICAST_OPTION;
+      }
+
+      if (SD_SERVICE_ID_TYPE_TWO_ENTRY_CHECK == LpServerServiceStatic->usServiceId)
+      {
+        /* Determine Config option pointer */
+        if (SD_NULL_PTR == LpEvHandlerStatic->pConfigOption)
+        {
+          /* If server option is not present, check for hostname */
+          if (SD_NULL_PTR == LpInstanceStatic->pConfigOption)
+          {
+            *LppConfigOption = SD_NULL_PTR;
+          }
+          else
+          {
+            *LppConfigOption = LpInstanceStatic->pConfigOption;
+          }
+        }
+        else
+        {
+          *LppConfigOption = LpEvHandlerStatic->pConfigOption;
+        }
       }
       else
       {
-        *LppConfigOption = LpInstanceStatic->pConfigOption;
+        *LppConfigOption = SD_NULL_PTR;
       }
-    }
-    else
-    {
-      *LppConfigOption = LpEvHandlerStatic->pConfigOption;
-    }
-  }
-  else
-  {
-    *LppConfigOption = SD_NULL_PTR;
-  }
-  /*polyspace +6 RTE:IDP [Justified:Low] "This Condition shall be True
-  when  LpClientServiceStatic->pConfigOption is Set as SD_NULL_PTR" */
-  if (SD_NULL_PTR == LpEvHandlerStatic->pConfigOption)
-  {
-    /*polyspace +7 RTE:UNR [Justified:Low] "This Condition shall be True
-    when  LpInstanceStatic->pConfigOption is Set as NULL_PTR" */
-    if (SD_NULL_PTR == LpInstanceStatic->pConfigOption)
-    {
-      *LppConfigOption = SD_NULL_PTR;
-    }
-    else
-    {
-      *LppConfigOption = LpInstanceStatic->pConfigOption;
+      /*polyspace +6 RTE:IDP [Justified:Low] "This Condition shall be True
+      when  LpClientServiceStatic->pConfigOption is Set as SD_NULL_PTR" */
+      if (SD_NULL_PTR == LpEvHandlerStatic->pConfigOption)
+      {
+        /*polyspace +7 RTE:UNR [Justified:Low] "This Condition shall be True
+        when  LpInstanceStatic->pConfigOption is Set as NULL_PTR" */
+        if (SD_NULL_PTR == LpInstanceStatic->pConfigOption)
+        {
+          *LppConfigOption = SD_NULL_PTR;
+        }
+        else
+        {
+          *LppConfigOption = LpInstanceStatic->pConfigOption;
+        }
+      }
+      /* polyspace +4 RTE:UNR [Justified:Low] "This condition shall be true when
+        the LpEvHandlerStatic is  not equal to SD_NULL_PTR . */
+      else
+      {
+        *LppConfigOption = LpEvHandlerStatic->pConfigOption;
     }
   }
-  /* polyspace +4 RTE:UNR [Justified:Low] "This condition shall be true when
-     the LpEvHandlerStatic is  not equal to SD_NULL_PTR . */
-  else
-  {
-    *LppConfigOption = LpEvHandlerStatic->pConfigOption;
-  }
-
   return (LucReturnVal);
 }
 /* polyspace-end RTE:UNR [Justified:Low] "Refer Sd_c_Poly_REF_1"*/
@@ -2357,6 +2618,10 @@ static uint8 Sd_TxGetOptionRefSubscribeAck(
 #define SD_START_SEC_CODE
 #include "Sd_MemMap.h"
 /* polyspace-begin RTE:UNR [Justified:Low] "Refer Sd_c_Poly_REF_1"*/
+/* parasoft-begin-suppress CERT_C-API00-a-3 
+"Reason: Sd_Tx_c_Cert_REF_1" */
+/* parasoft-begin-suppress CERT_C-DCL00-b-3 
+  "Reason: Sd_Tx_c_Cert_REF_2" */
 static uint8 Sd_TxGetOptionRef(
     const Sd_QueueType * LpQueueElement,
     SoAd_SoConIdType * LpSoConId1,
@@ -2365,86 +2630,104 @@ static uint8 Sd_TxGetOptionRef(
     uint8 * LpProtocol2,
     const uint8* * LppConfigOption,
     Sd_TypeOfOptionsType * LpTypeOfOption)
+/* parasoft-end-suppress CERT_C-API00-a-3 */
+/* parasoft-end-suppress CERT_C-DCL00-b-3 */
 {
   /*[SWS_SD_00480]*/
-  uint8 LucReturnVal;
+  uint8 LucReturnVal = (uint8)SD_ZERO;
   Sd_InstanceStaticType const *LpInstanceStatic;
-  SchM_Enter_Sd_MODE_STATUS_PROTECTION();
-#if (STD_ON == SD_PRE_COMPILE_SINGLE)
-  LpInstanceStatic = &Sd_GaaInstanceStatic[LpQueueElement->ucSdInstanceIndex];
-#else
-  LpInstanceStatic = ((Sd_GpConfigPtr->pInstanceStatic) + LpQueueElement->ucSdInstanceIndex);
-#endif
-  SchM_Exit_Sd_MODE_STATUS_PROTECTION();
-  switch ((LpQueueElement->stEntryData).enTypeOfEntry)
+
+  /* Parameter validation for Parasoft CERT_C-API00-a-3 */
+  if ((SD_NULL_PTR == LpQueueElement) ||
+      (SD_NULL_PTR == LpSoConId1) ||
+      (SD_NULL_PTR == LpProtocol1) ||
+      (SD_NULL_PTR == LpSoConId2) ||
+      (SD_NULL_PTR == LpProtocol2) ||
+      (SD_NULL_PTR == LppConfigOption) ||
+      (SD_NULL_PTR == LpTypeOfOption))
   {
-  case SD_FIND_SERVICE_ENTRY:
-  {
-#if (STD_ON == SD_CLIENT_CONFIGURED)
-    LucReturnVal = Sd_TxGetOptionRefFind(LpQueueElement, LppConfigOption);
-#else
-    LucReturnVal = SD_ZERO;
-#endif
-    break;
+    LucReturnVal =  (uint8) SD_ZERO;
   }
-  case SD_OFFER_SERVICE_ENTRY:
-  case SD_STOP_OFFER_SERVICE_ENTRY:
+  else
   {
-#if (STD_ON == SD_SERVER_CONFIGURED)
-    LucReturnVal = Sd_TxGetOptionRefOffer(LpQueueElement, LpSoConId1,
-                                          LpProtocol1, LpSoConId2, LpProtocol2, LppConfigOption,
-                                          LpTypeOfOption);
-#else
-    LucReturnVal = SD_ZERO;
-#endif
-    break;
-  }
-  case SD_SUBSCRIBE_ENTRY:
-  case SD_STOP_SUBSCRIBE_ENTRY:
-  {
-#if (STD_ON == SD_CONSUMED_EV_GRP_CONFIGURED)
-    LucReturnVal = Sd_TxGetOptionRefSubscribe(LpQueueElement, LpSoConId1,
-                                              LpProtocol1, LpSoConId2, LpProtocol2, LppConfigOption,
-                                              LpTypeOfOption);
-#else
-    LucReturnVal = SD_ZERO;
-#endif
-    break;
-  }
-  case SD_SUBSCRIBE_ACK_ENTRY:
-  {
-#if (STD_ON == SD_EV_HANDLER_CONFIGURED)
-    LucReturnVal = Sd_TxGetOptionRefSubscribeAck(LpQueueElement, LpSoConId1,
-                                                 LpProtocol1, LppConfigOption, LpTypeOfOption);
-#else
-    LucReturnVal = SD_ZERO;
-#endif
-    break;
-  }
-  case SD_SUBSCRIBE_NACK_ENTRY:
-  {
-    /*polyspace +10 RTE:UNR [Justified:Low] "This Condition shall be True when
-    LpInstanceStatic->pConfigOption is Set as NULL_PTR" */
-    /*polyspace +4 RTE:IDP [Justified:Low] "Pointers with this orange flag are
-      made sure that they are within their range by having necessary boundary
-      checks in order to prevent them from being illegally dereferenced." */
-    if (SD_NULL_PTR == LpInstanceStatic->pConfigOption)
+    SchM_Enter_Sd_MODE_STATUS_PROTECTION();
+  #if (STD_ON == SD_PRE_COMPILE_SINGLE)
+    LpInstanceStatic = &Sd_GaaInstanceStatic[LpQueueElement->ucSdInstanceIndex];
+  #else
+    LpInstanceStatic = &(Sd_GpConfigPtr->pInstanceStatic
+      [LpQueueElement->ucSdInstanceIndex]);
+  #endif
+    SchM_Exit_Sd_MODE_STATUS_PROTECTION();
+    switch ((LpQueueElement->stEntryData).enTypeOfEntry)
     {
-      *LppConfigOption = SD_NULL_PTR;
-      LucReturnVal = SD_ZERO;
-    }
-    else
+    case SD_FIND_SERVICE_ENTRY:
     {
-      *LppConfigOption = LpInstanceStatic->pConfigOption;
-      LucReturnVal = SD_ZERO;
+  #if (STD_ON == SD_CLIENT_CONFIGURED)
+      LucReturnVal = Sd_TxGetOptionRefFind(LpQueueElement, LppConfigOption);
+  #else
+      LucReturnVal =  (uint8) SD_ZERO;
+  #endif
+      break;
     }
-    break;
-  }
-  default:
-  {
-    LucReturnVal = SD_ZERO;
-    break;
-  }
+    case SD_OFFER_SERVICE_ENTRY:
+    case SD_STOP_OFFER_SERVICE_ENTRY:
+    {
+  #if (STD_ON == SD_SERVER_CONFIGURED)
+      LucReturnVal = Sd_TxGetOptionRefOffer(LpQueueElement, LpSoConId1,
+                                            LpProtocol1, LpSoConId2, LpProtocol2, LppConfigOption,
+                                            LpTypeOfOption);
+  #else
+      LucReturnVal = (uint8) SD_ZERO;
+  #endif
+      break;
+    }
+    case SD_SUBSCRIBE_ENTRY:
+    case SD_STOP_SUBSCRIBE_ENTRY:
+    {
+  #if (STD_ON == SD_CONSUMED_EV_GRP_CONFIGURED)
+      LucReturnVal = Sd_TxGetOptionRefSubscribe(LpQueueElement, LpSoConId1,
+                                                LpProtocol1, LpSoConId2, LpProtocol2, LppConfigOption,
+                                                LpTypeOfOption);
+  #else
+      LucReturnVal = (uint8) SD_ZERO;
+  #endif
+      break;
+    }
+    case SD_SUBSCRIBE_ACK_ENTRY:
+    {
+  #if (STD_ON == SD_EV_HANDLER_CONFIGURED)
+      LucReturnVal = Sd_TxGetOptionRefSubscribeAck(LpQueueElement, LpSoConId1,
+                                                  LpProtocol1, LppConfigOption, LpTypeOfOption);
+  #else
+      LucReturnVal = (uint8) SD_ZERO;
+  #endif
+      break;
+    }
+    case SD_SUBSCRIBE_NACK_ENTRY:
+    {
+      /*polyspace +10 RTE:UNR [Justified:Low] "This Condition shall be True when
+      LpInstanceStatic->pConfigOption is Set as NULL_PTR" */
+      /*polyspace +4 RTE:IDP [Justified:Low] "Pointers with this orange flag are
+        made sure that they are within their range by having necessary boundary
+        checks in order to prevent them from being illegally dereferenced." */
+      if (SD_NULL_PTR == LpInstanceStatic->pConfigOption)
+      {
+        *LppConfigOption = SD_NULL_PTR;
+        LucReturnVal = (uint8) SD_ZERO;
+      }
+      else
+      {
+        *LppConfigOption = LpInstanceStatic->pConfigOption;
+        LucReturnVal =  (uint8) SD_ZERO;
+      }
+      break;
+    }
+    default:
+    {
+      LucReturnVal =  (uint8) SD_ZERO;
+      break;
+    }
+    }
   }
   return (LucReturnVal);
 }
@@ -2486,9 +2769,15 @@ static uint8 Sd_TxGetOptionRef(
 *******************************************************************************/
 #define SD_START_SEC_CODE
 #include "Sd_MemMap.h"
+/* parasoft-begin-suppress CERT_C-API00-a-3 
+"Reason: Sd_Tx_c_Cert_REF_1" */
+/* parasoft-begin-suppress CERT_C-DCL00-b-3 
+  "Reason: Sd_Tx_c_Cert_REF_2" */
 static void Sd_TransmitEntry(
-    uint8 LpSduDataPtr[],
-    const Sd_EntryType * LpEntry)
+  uint8 * const LpSduDataPtr,
+  const Sd_EntryType * const LpEntry)
+/* parasoft-end-suppress CERT_C-API00-a-3 */
+/* parasoft-end-suppress CERT_C-DCL00-b-3 */
 {
   Sd_Entry1DataType const *LpEntry1;
   Sd_Entry2DataType const *LpEntry2;
@@ -2499,79 +2788,83 @@ static void Sd_TransmitEntry(
   SWS_SD_00170
     SWS_SD_00289a
     SWS_SD_00289b */
-  /*polyspace +4 RTE:IDP [Justified:Low] "Pointers with this orange flag are
-   made sure that they are within their range by having necessary boundary
-   checks in order to prevent them from being illegally dereferenced." */
-  switch (LpEntry->enTypeOfEntry)
+  if ((SD_NULL_PTR != LpSduDataPtr) &&
+      (SD_NULL_PTR != LpEntry))
   {
-  /*SWS_SD_00162*/
-  case SD_FIND_SERVICE_ENTRY:
-  case SD_OFFER_SERVICE_ENTRY:
-  case SD_STOP_OFFER_SERVICE_ENTRY:
-  {
+    /*polyspace +4 RTE:IDP [Justified:Low] "Pointers with this orange flag are
+    made sure that they are within their range by having necessary boundary
+    checks in order to prevent them from being illegally dereferenced." */
+    switch (LpEntry->enTypeOfEntry)
+    {
+      /*SWS_SD_00162*/
+      case SD_FIND_SERVICE_ENTRY:
+      case SD_OFFER_SERVICE_ENTRY:
+      case SD_STOP_OFFER_SERVICE_ENTRY:
+      {
 
-    LpEntry1 = &((LpEntry->unEntryData).stEntry1);
+        LpEntry1 = &((LpEntry->unEntryData).stEntry1);
 
-    LpSduDataPtr[SD_ZERO] = LpEntry1->ucEntryType;
+        LpSduDataPtr[SD_ZERO] = LpEntry1->ucEntryType;
 
-    LpSduDataPtr[SD_ONE] = LpEntry1->ucIndex1;
+        LpSduDataPtr[SD_ONE] = LpEntry1->ucIndex1;
 
-    LpSduDataPtr[SD_TWO] = LpEntry1->ucIndex2;
+        LpSduDataPtr[SD_TWO] = LpEntry1->ucIndex2;
 
-    LucNoOfOptions = ((uint8)((LpEntry1->ucNoOfOptions1) << SD_FOUR) |
-                      (LpEntry1->ucNoOfOptions2));
-    LpSduDataPtr[SD_THREE] = LucNoOfOptions;
+        LucNoOfOptions = ((uint8)((LpEntry1->ucNoOfOptions1) << SD_FOUR) |
+                          (LpEntry1->ucNoOfOptions2));
+        LpSduDataPtr[SD_THREE] = LucNoOfOptions;
 
-    Sd_HosttonetPtr(&LpSduDataPtr[SD_FOUR], LpEntry1->usServiceId);
+        Sd_HosttonetPtr(&LpSduDataPtr[SD_FOUR], LpEntry1->usServiceId);
 
-    Sd_HosttonetPtr(&LpSduDataPtr[SD_SIX], LpEntry1->usInstanceId);
+        Sd_HosttonetPtr(&LpSduDataPtr[SD_SIX], LpEntry1->usInstanceId);
 
-    LpSduDataPtr[SD_EIGHT] = LpEntry1->ucMajorVersion;
+        LpSduDataPtr[SD_EIGHT] = LpEntry1->ucMajorVersion;
 
-    Sd_Hosttonet3Ptr(&LpSduDataPtr[SD_NINE], LpEntry1->ulTtlsec);
+        Sd_Hosttonet3Ptr(&LpSduDataPtr[SD_NINE], LpEntry1->ulTtlsec);
 
-    Sd_HosttonetlPtr(&LpSduDataPtr[SD_TWELVE], LpEntry1->ulMinorVersion);
+        Sd_HosttonetlPtr(&LpSduDataPtr[SD_TWELVE], LpEntry1->ulMinorVersion);
 
-    break;
-  }
-  case SD_SUBSCRIBE_ENTRY:
-  case SD_STOP_SUBSCRIBE_ENTRY:
-  case SD_SUBSCRIBE_ACK_ENTRY:
-  case SD_SUBSCRIBE_NACK_ENTRY:
-  {
-    LpEntry2 = &((LpEntry->unEntryData).stEntry2);
+        break;
+      }
+      case SD_SUBSCRIBE_ENTRY:
+      case SD_STOP_SUBSCRIBE_ENTRY:
+      case SD_SUBSCRIBE_ACK_ENTRY:
+      case SD_SUBSCRIBE_NACK_ENTRY:
+      {
+        LpEntry2 = &((LpEntry->unEntryData).stEntry2);
 
-    LpSduDataPtr[SD_ZERO] = LpEntry2->ucEntryType;
+        LpSduDataPtr[SD_ZERO] = LpEntry2->ucEntryType;
 
-    LpSduDataPtr[SD_ONE] = LpEntry2->ucIndex1;
+        LpSduDataPtr[SD_ONE] = LpEntry2->ucIndex1;
 
-    LpSduDataPtr[SD_TWO] = LpEntry2->ucIndex2;
+        LpSduDataPtr[SD_TWO] = LpEntry2->ucIndex2;
 
-    LucNoOfOptions = ((uint8)((LpEntry2->ucNoOfOptions1) << SD_FOUR) |
-                      (LpEntry2->ucNoOfOptions2));
-    LpSduDataPtr[SD_THREE] = LucNoOfOptions;
+        LucNoOfOptions = ((uint8)((LpEntry2->ucNoOfOptions1) << SD_FOUR) |
+                          (LpEntry2->ucNoOfOptions2));
+        LpSduDataPtr[SD_THREE] = LucNoOfOptions;
 
-    Sd_HosttonetPtr(&LpSduDataPtr[SD_FOUR], LpEntry2->usServiceId);
+        Sd_HosttonetPtr(&LpSduDataPtr[SD_FOUR], LpEntry2->usServiceId);
 
-    Sd_HosttonetPtr(&LpSduDataPtr[SD_SIX], LpEntry2->usInstanceId);
+        Sd_HosttonetPtr(&LpSduDataPtr[SD_SIX], LpEntry2->usInstanceId);
 
-    LpSduDataPtr[SD_EIGHT] = LpEntry2->ucMajorVersion;
+        LpSduDataPtr[SD_EIGHT] = LpEntry2->ucMajorVersion;
 
-    Sd_Hosttonet3Ptr(&LpSduDataPtr[SD_NINE], LpEntry2->ulTtlsec);
+        Sd_Hosttonet3Ptr(&LpSduDataPtr[SD_NINE], LpEntry2->ulTtlsec);
 
-    LpSduDataPtr[SD_TWELVE] = SD_ZERO;
+        LpSduDataPtr[SD_TWELVE] =  (uint8) SD_ZERO;
 
-    LpSduDataPtr[SD_THIRTEEN] = LpEntry2->ucCounter;
+        LpSduDataPtr[SD_THIRTEEN] = LpEntry2->ucCounter;
 
-    Sd_HosttonetPtr(&LpSduDataPtr[SD_FOURTEEN], LpEntry2->usEventGroupId);
+        Sd_HosttonetPtr(&LpSduDataPtr[SD_FOURTEEN], LpEntry2->usEventGroupId);
 
-    break;
-  }
-  default:
-  {
-    /* Do Nothing */
-    break;
-  }
+        break;
+      }
+      default:
+      {
+        /* Do Nothing */
+        break;
+      }
+    }
   }
 }
 #define SD_STOP_SEC_CODE
@@ -2616,10 +2909,16 @@ static void Sd_TransmitEntry(
 #define SD_START_SEC_CODE
 #include "Sd_MemMap.h"
 /* polyspace-begin RTE:UNR [Justified:Low] "Refer Sd_c_Poly_REF_1"*/
+/* parasoft-begin-suppress CERT_C-API00-a-3 
+"Reason: Sd_Tx_c_Cert_REF_1" */
+/* parasoft-begin-suppress CERT_C-DCL00-b-3 
+  "Reason: Sd_Tx_c_Cert_REF_2" */
 static uint16 Sd_TransmitOption(
-    uint8 LpSduDataPtr[],
-    const Sd_OptionsRefType * LpOptionsRef,
-    uint8 ucSdInstanceIndex)
+  uint8 *LpSduDataPtr,
+  const Sd_OptionsRefType * const LpOptionsRef,
+  const uint8 ucSdInstanceIndex)
+/* parasoft-end-suppress CERT_C-API00-a-3 */
+/* parasoft-end-suppress CERT_C-DCL00-b-3 */
 {
   uint16 LusReturnVal;
   TcpIp_SockAddrType LstIpv4Addr;
@@ -2640,7 +2939,7 @@ static uint16 Sd_TransmitOption(
 #if (STD_ON == SD_PRE_COMPILE_SINGLE)
   LpInstanceStatic = &Sd_GaaInstanceStatic[ucSdInstanceIndex];
 #else
-  LpInstanceStatic = ((Sd_GpConfigPtr->pInstanceStatic) + ucSdInstanceIndex);
+  LpInstanceStatic = &(Sd_GpConfigPtr->pInstanceStatic[ucSdInstanceIndex]);
 #endif
   SchM_Exit_Sd_MODE_STATUS_PROTECTION();
   /*polyspace +3 RTE:IDP [Justified:Low] "Pointers with this orange flag are
@@ -2648,284 +2947,250 @@ static uint16 Sd_TransmitOption(
     checks in order to prevent them from being illegally dereferenced." */
   switch (LpOptionsRef->enTypeOfOption)
   {
-  case SD_CONFIGURATION_OPTION:
-  {
-    /* polyspace +3 RTE:UNR [Justified:Low] "This condition shall be true when
-       the LpOptionsRef is  equal to SD_NULL_PTR . */
-    if (SD_NULL_PTR == LpOptionsRef->pConfigOption)
+    case SD_CONFIGURATION_OPTION:
     {
-      LusReturnVal = SD_ZERO;
-    }
-    /*LogicAnalyser WRN04: Manually Verified*/
-    else if (LpOptionsRef->pConfigOption == LpInstanceStatic->pConfigOption)
-    {
-      /*polyspace +4 RTE:IDP [Justified:Low] "Pointers with this orange flag are
-        made sure that they are within their range by having necessary boundary
-        checks in order to prevent them from being illegally dereferenced." */
-      LpSduDataPtr[SD_ZERO] = LpInstanceStatic->pConfigOption[SD_ZERO];
-      /*polyspace +7 RTE:IDP [Justified:Low] "Pointers with this orange
-      flag are made sure that they are within their range by having necessary boundary
-       checks in order to prevent them from being illegally dereferenced." */
-      LpSduDataPtr[SD_ONE] = LpInstanceStatic->pConfigOption[SD_ONE];
-      LpSduDataPtr[SD_TWO] = SD_ONE;
-      LpSduDataPtr[SD_THREE] = SD_ZERO;
-
-      LusCount = SD_FOUR;
-      /*polyspace +4 RTE:IDP [Justified:Low] "Pointers with this orange flag are
-        made sure that they are within their range by having necessary boundary
-        checks in order to prevent them from being illegally dereferenced." */
-      while (SD_ZERO != LpInstanceStatic->pConfigOption[LusCount])
+      /* polyspace +3 RTE:UNR [Justified:Low] "This condition shall be true when
+        the LpOptionsRef is  equal to SD_NULL_PTR . */
+      if (SD_NULL_PTR == LpOptionsRef->pConfigOption)
       {
-        /*polyspace +3 RTE:IDP [Justified:Low] "Pointers with this orange flag are
-         made sure that they are within their range by having necessary boundary
-         checks in order to prevent them from being illegally dereferenced." */
-        LpSduDataPtr[LusCount] = LpInstanceStatic->pConfigOption[LusCount];
-        LusCount++;
+        LusReturnVal = (uint16) SD_ZERO;
       }
-      /*polyspace +5 RTE:IDP [Justified:Low] "Pointers with this orange flag are
-        made sure that they are within their range by having necessary boundary
-        checks in order to prevent them from being illegally dereferenced." */
-      LpSduDataPtr[LusCount] = SD_ZERO;
-      LusCount++;
-      LusReturnVal = LusCount;
-    }
-    /*LogicAnalyser WRN04: Manually Verified*/
-    /*polyspace +7 RTE:UNR [Justified:Low] "This Condition shall be True when
-     LpInstanceStatic->pConfigOption is Set as NULL_PTR" */
-    else if (SD_NULL_PTR == LpInstanceStatic->pConfigOption)
-    {
-      /*polyspace +6 RTE:IDP [Justified:Low] "Pointers with this orange flag are
-      made sure that they are within their range by having necessary boundary
-      checks in order to prevent them from being illegally dereferenced." */
-      LpSduDataPtr[SD_ZERO] = LpOptionsRef->pConfigOption[SD_ZERO];
-      LpSduDataPtr[SD_ONE] = LpOptionsRef->pConfigOption[SD_ONE];
-      LpSduDataPtr[SD_TWO] = SD_ONE;
-      LpSduDataPtr[SD_THREE] = SD_ZERO;
-
-      LusCount = SD_FOUR;
-      /*polyspace +6 RTE:IDP [Justified:Low] "Pointers with this orange flag are
-        made sure that they are within their range by having necessary boundary
-        checks in order to prevent them from being illegally dereferenced." */
-      while (SD_ZERO != LpOptionsRef->pConfigOption[LusCount])
+      /*LogicAnalyser WRN04: Manually Verified*/
+      else if (LpOptionsRef->pConfigOption == LpInstanceStatic->pConfigOption)
       {
-        LpSduDataPtr[LusCount] = LpOptionsRef->pConfigOption[LusCount];
+        /*polyspace +4 RTE:IDP [Justified:Low] "Pointers with this orange flag are
+          made sure that they are within their range by having necessary boundary
+          checks in order to prevent them from being illegally dereferenced." */
+        LpSduDataPtr[SD_ZERO] = LpInstanceStatic->pConfigOption[SD_ZERO];
+        /*polyspace +7 RTE:IDP [Justified:Low] "Pointers with this orange
+        flag are made sure that they are within their range by having necessary boundary
+        checks in order to prevent them from being illegally dereferenced." */
+        LpSduDataPtr[SD_ONE] = LpInstanceStatic->pConfigOption[SD_ONE];
+        LpSduDataPtr[SD_TWO] = (uint8) SD_ONE;
+        LpSduDataPtr[SD_THREE] = (uint8) SD_ZERO;
+
+        LusCount = (uint16) SD_FOUR;
+        /*polyspace +4 RTE:IDP [Justified:Low] "Pointers with this orange flag are
+          made sure that they are within their range by having necessary boundary
+          checks in order to prevent them from being illegally dereferenced." */
+        while ((uint8) SD_ZERO != LpInstanceStatic->pConfigOption[LusCount])
+        {
+          /*polyspace +3 RTE:IDP [Justified:Low] "Pointers with this orange flag are
+          made sure that they are within their range by having necessary boundary
+          checks in order to prevent them from being illegally dereferenced." */
+          LpSduDataPtr[LusCount] = LpInstanceStatic->pConfigOption[LusCount];
+          LusCount++;
+        }
+        /*polyspace +5 RTE:IDP [Justified:Low] "Pointers with this orange flag are
+          made sure that they are within their range by having necessary boundary
+          checks in order to prevent them from being illegally dereferenced." */
+        LpSduDataPtr[LusCount] = (uint8) SD_ZERO;
         LusCount++;
+        LusReturnVal = LusCount;
       }
-      /*polyspace +3 RTE:IDP [Justified:Low] "Pointers with this orange flag are
+      /*LogicAnalyser WRN04: Manually Verified*/
+      /*polyspace +7 RTE:UNR [Justified:Low] "This Condition shall be True when
+      LpInstanceStatic->pConfigOption is Set as NULL_PTR" */
+      else if (SD_NULL_PTR == LpInstanceStatic->pConfigOption)
+      {
+        /*polyspace +6 RTE:IDP [Justified:Low] "Pointers with this orange flag are
         made sure that they are within their range by having necessary boundary
         checks in order to prevent them from being illegally dereferenced." */
-      LpSduDataPtr[LusCount] = SD_ZERO;
-      LusCount++;
-      LusReturnVal = LusCount;
-    }
-    else
-    {
-      /*polyspace +7 RTE:IDP [Justified:Low] "Pointers with this orange
-      flag are made sure that they are within their range by having necessary
-      boundary checks in order to prevent them from being illegally dereferenced.
-      " */
-      LusHostnameLength =
-          ((uint16)((uint16)(LpInstanceStatic->pConfigOption[SD_ZERO])
-                    << SD_EIGHT)) |
-          LpInstanceStatic->pConfigOption[SD_ONE];
+        LpSduDataPtr[SD_ZERO] = LpOptionsRef->pConfigOption[SD_ZERO];
+        LpSduDataPtr[SD_ONE] = LpOptionsRef->pConfigOption[SD_ONE];
+        LpSduDataPtr[SD_TWO] = (uint8) SD_ONE;
+        LpSduDataPtr[SD_THREE] = (uint8) SD_ZERO;
 
-      LusConfigOptionLength =
-          ((uint16)((uint16)(LpOptionsRef->pConfigOption[SD_ZERO])
-                    << SD_EIGHT)) |
-          LpOptionsRef->pConfigOption[SD_ONE];
-
-      LusConfigOptionLength = (LusConfigOptionLength +
-                               LusHostnameLength) -
-                              SD_TWO;
-
-      /*polyspace +7 RTE:IDP [Justified:Low] "Pointers with this orange flag are
-       made sure that they are within their range by having necessary boundary
-       checks in order to prevent them from being illegally dereferenced." */
-      LpSduDataPtr[SD_ZERO] = (uint8)(LusConfigOptionLength >> SD_EIGHT);
-      LpSduDataPtr[SD_ONE] = (uint8)(LusConfigOptionLength & SD_BYTE_MASK);
-      LpSduDataPtr[SD_TWO] = SD_ONE;
-      LpSduDataPtr[SD_THREE] = SD_ZERO;
-
-      LusCount = SD_FOUR;
-      /*polyspace +5 RTE:IDP [Justified:Low] "Pointers with this orange flag are
-      made sure that they are within their range by having necessary boundary
-      checks in order to prevent them from being illegally dereferenced." */
-      while (SD_ZERO != LpOptionsRef->pConfigOption[LusCount])
-      {
-        LpSduDataPtr[LusCount] = LpOptionsRef->pConfigOption[LusCount];
-        LusCount++;
-      }
-
-      LusCount2 = SD_FOUR;
-      /*polyspace +5 RTE:IDP [Justified:Low] "Pointers with this orange flag
-      are made sure that they are within their range by having necessary boundary
-        checks in order to prevent them from being illegally dereferenced." */
-      while (SD_ZERO != LpInstanceStatic->pConfigOption[LusCount2])
-      {
+        LusCount = (uint16) SD_FOUR;
+        /*polyspace +6 RTE:IDP [Justified:Low] "Pointers with this orange flag are
+          made sure that they are within their range by having necessary boundary
+          checks in order to prevent them from being illegally dereferenced." */
+        while ((uint8) SD_ZERO != LpOptionsRef->pConfigOption[LusCount])
+        {
+          LpSduDataPtr[LusCount] = LpOptionsRef->pConfigOption[LusCount];
+          LusCount++;
+        }
         /*polyspace +3 RTE:IDP [Justified:Low] "Pointers with this orange flag are
           made sure that they are within their range by having necessary boundary
           checks in order to prevent them from being illegally dereferenced." */
-        LpSduDataPtr[LusCount] = LpInstanceStatic->pConfigOption[LusCount2];
+        LpSduDataPtr[LusCount] = (uint8) SD_ZERO;
         LusCount++;
-        LusCount2++;
+        LusReturnVal = LusCount;
       }
-      /*polyspace +3 RTE:IDP [Justified:Low] "Pointers with this orange flag are
-      made sure that they are within their range by having necessary boundary
-      checks in order to prevent them from being illegally dereferenced." */
-      LpSduDataPtr[LusCount] = SD_ZERO;
+      else
+      {
+        /*polyspace +7 RTE:IDP [Justified:Low] "Pointers with this orange
+        flag are made sure that they are within their range by having necessary
+        boundary checks in order to prevent them from being illegally dereferenced.
+        " */
+        LusHostnameLength =
+            ((uint16)((uint16)(LpInstanceStatic->pConfigOption[SD_ZERO])
+                      << SD_EIGHT)) |
+            (uint16) LpInstanceStatic->pConfigOption[SD_ONE];
 
-      LusReturnVal = LusConfigOptionLength + SD_THREE;
+        LusConfigOptionLength =
+            ((uint16)((uint16)(LpOptionsRef->pConfigOption[SD_ZERO])
+                      << SD_EIGHT)) |
+            (uint16) LpOptionsRef->pConfigOption[SD_ONE];
+
+          LusConfigOptionLength = (uint16)((uint16)LusConfigOptionLength + 
+          (uint16)LusHostnameLength - (uint16)SD_TWO);
+
+        /*polyspace +7 RTE:IDP [Justified:Low] "Pointers with this orange flag are
+        made sure that they are within their range by having necessary boundary
+        checks in order to prevent them from being illegally dereferenced." */
+        LpSduDataPtr[SD_ZERO] = (uint8)(LusConfigOptionLength >> SD_EIGHT);
+        LpSduDataPtr[SD_ONE] = (uint8)(LusConfigOptionLength & SD_BYTE_MASK);
+        LpSduDataPtr[SD_TWO] = (uint8) SD_ONE;
+        LpSduDataPtr[SD_THREE] = (uint8) SD_ZERO;
+
+        LusCount = (uint16) SD_FOUR;
+        /*polyspace +5 RTE:IDP [Justified:Low] "Pointers with this orange flag are
+        made sure that they are within their range by having necessary boundary
+        checks in order to prevent them from being illegally dereferenced." */
+        while ((uint8) SD_ZERO != LpOptionsRef->pConfigOption[LusCount])
+        {
+          LpSduDataPtr[LusCount] = LpOptionsRef->pConfigOption[LusCount];
+          LusCount++;
+        }
+
+        LusCount2 = (uint16) SD_FOUR;
+        /*polyspace +5 RTE:IDP [Justified:Low] "Pointers with this orange flag
+        are made sure that they are within their range by having necessary boundary
+          checks in order to prevent them from being illegally dereferenced." */
+        while ((uint8) SD_ZERO != LpInstanceStatic->pConfigOption[LusCount2])
+        {
+          /*polyspace +3 RTE:IDP [Justified:Low] "Pointers with this orange flag are
+            made sure that they are within their range by having necessary boundary
+            checks in order to prevent them from being illegally dereferenced." */
+          LpSduDataPtr[LusCount] = LpInstanceStatic->pConfigOption[LusCount2];
+          LusCount++;
+          LusCount2++;
+        }
+        /*polyspace +3 RTE:IDP [Justified:Low] "Pointers with this orange flag are
+        made sure that they are within their range by having necessary boundary
+        checks in order to prevent them from being illegally dereferenced." */
+        LpSduDataPtr[LusCount] = (uint8) SD_ZERO;
+
+        LusReturnVal = LusConfigOptionLength + (uint16) SD_THREE;
+      }
+      break;
     }
-    break;
-  }
-  /* SWS_SD_00211
-   SWS_SD_00670 */
-  case SD_IPV4_ENDPOINT_OPTION:
-  {
-    Sd_HosttonetPtr(&LpSduDataPtr[SD_ZERO], SD_IPV4_OPTION_LENGTH);
-    /*polyspace +5 RTE:IDP [Justified:Low] "Pointers with this orange flag are
-    made sure that they are within their range by having necessary boundary
-    checks in order to prevent them from being illegally dereferenced." */
-    LpSduDataPtr[SD_TWO] = (uint8)SD_OPTION_TYPE_IPV4_ENDPOINT;
-
-    LpSduDataPtr[SD_THREE] = SD_ZERO;
-
-    LstIpv4Addr.domain = TCPIP_AF_INET;
-    LstRouterIpv4Dummy.domain = TCPIP_AF_INET;
-
-    (void)SoAd_GetLocalAddr(LpOptionsRef->ddLocalAddrSoConId,
-                            &LstIpv4Addr, &LpNetmaskDummy, &LstRouterIpv4Dummy);
-
-    /*redmine #50073*/
-
-    Sd_HtonlArr(&LpSduDataPtr[SD_FOUR],
-                &LstIpv4Addr.aaSockAddrInetData[SD_TWO]);
-    /*polyspace +5 RTE:IDP [Justified:Low] "Pointers with this orange flag are
-    made sure that they are within their range by having necessary boundary
-    checks in order to prevent them from being illegally dereferenced." */
-    LpSduDataPtr[SD_EIGHT] = (uint8)SD_ZERO;
-
-    LpSduDataPtr[SD_NINE] = LpOptionsRef->ucProtocol;
-
-    Sd_HtonsArr(&LpSduDataPtr[SD_TEN],
-                &LstIpv4Addr.aaSockAddrInetData[SD_ZERO]);
-    LusReturnVal = SD_TWELVE;
-    break;
-  }
-  /* SWS_SD_00679 */
-  case SD_IPV6_ENDPOINT_OPTION:
-  {
-    Sd_HosttonetPtr(&LpSduDataPtr[SD_ZERO], SD_IPV6_OPTION_LENGTH);
-    /*polyspace +5 RTE:IDP [Justified:Low] "Pointers with this orange flag are
-     made sure that they are within their range by having necessary boundary
-     checks in order to prevent them from being illegally dereferenced." */
-    LpSduDataPtr[SD_TWO] = (uint8)SD_OPTION_TYPE_IPV6_ENDPOINT;
-
-    LpSduDataPtr[SD_THREE] = (uint8)SD_ZERO;
-
-    LstIpv6Addr.domain = TCPIP_AF_INET6;
-    LstRouterIpv6Dummy.domain = TCPIP_AF_INET6;
-
-    (void)SoAd_GetLocalAddr(LpOptionsRef->ddLocalAddrSoConId,
-                            &LstIpv6Addr, &LpNetmaskDummy, &LstRouterIpv6Dummy);
-
-    Sd_HtonlArr(&LpSduDataPtr[SD_FOUR],
-                &LstIpv6Addr.aaSockAddrInetData[SD_TWO]);
-    Sd_HtonlArr(&LpSduDataPtr[SD_EIGHT],
-                &LstIpv6Addr.aaSockAddrInetData[SD_SIX]);
-    Sd_HtonlArr(&LpSduDataPtr[SD_TWELVE],
-                &LstIpv6Addr.aaSockAddrInetData[SD_TEN]);
-    Sd_HtonlArr(&LpSduDataPtr[SD_SIXTEEN],
-                &LstIpv6Addr.aaSockAddrInetData[SD_FOURTEEN]);
-    /*polyspace +5 RTE:IDP [Justified:Low] "Pointers with this orange flag are
-    made sure that they are within their range by having necessary boundary
-    checks in order to prevent them from being illegally dereferenced." */
-    LpSduDataPtr[SD_TWENTY] = (uint8)SD_ZERO;
-
-    LpSduDataPtr[SD_TWENTY_ONE] = LpOptionsRef->ucProtocol;
-
-    Sd_HtonsArr(&LpSduDataPtr[SD_TWENTY_TWO],
-                &LstIpv6Addr.aaSockAddrInetData[SD_ZERO]);
-
-    LusReturnVal = SD_TWENTY_FOUR;
-    break;
-  }
-  /*SWS_SD_00393
-  SWS_SD_00394*/
-  case SD_IPV4_MULTICAST_OPTION:
-  {
-    Sd_HosttonetPtr(&LpSduDataPtr[SD_ZERO], SD_IPV4_OPTION_LENGTH);
-    /*polyspace +5 RTE:IDP [Justified:Low] "Pointers with this orange flag are
-    made sure that they are within their range by having necessary boundary
-    checks in order to prevent them from being illegally dereferenced." */
-    LpSduDataPtr[SD_TWO] = (uint8)SD_OPTION_TYPE_IPV4_MULTICAST;
-
-    LpSduDataPtr[SD_THREE] = (uint8)SD_ZERO;
-
-    LstIpv4Addr.domain = TCPIP_AF_INET;
-
-    (void)SoAd_GetRemoteAddr(LpOptionsRef->ddLocalAddrSoConId,
-                             &LstIpv4Addr);
-
-    Sd_HtonlArr(&LpSduDataPtr[SD_FOUR],
-                &LstIpv4Addr.aaSockAddrInetData[SD_TWO]);
-
-    /*polyspace +5 RTE:IDP [Justified:Low] "Pointers with this orange flag are
+    /* SWS_SD_00211
+    SWS_SD_00670 */
+    case SD_IPV4_ENDPOINT_OPTION:
+    {
+      Sd_HosttonetPtr(&LpSduDataPtr[SD_ZERO], SD_IPV4_OPTION_LENGTH);
+      /*polyspace +5 RTE:IDP [Justified:Low] "Pointers with this orange flag are
       made sure that they are within their range by having necessary boundary
       checks in order to prevent them from being illegally dereferenced." */
-    LpSduDataPtr[SD_EIGHT] = (uint8)SD_ZERO;
+      LpSduDataPtr[SD_TWO] = (uint8) SD_OPTION_TYPE_IPV4_ENDPOINT;
 
-    LpSduDataPtr[SD_NINE] = LpOptionsRef->ucProtocol;
+      LpSduDataPtr[SD_THREE] = (uint8) SD_ZERO;
 
-    Sd_HtonsArr(&LpSduDataPtr[SD_TEN],
-                &LstIpv4Addr.aaSockAddrInetData[SD_ZERO]);
-    LusReturnVal = SD_TWELVE;
-    break;
-  }
-  /*SWS_SD_00399
-  SWS_SD_00404
-  SWS_SD_00413 */
-  case SD_IPV6_MULTICAST_OPTION:
-  {
-    Sd_HosttonetPtr(&LpSduDataPtr[SD_ZERO], SD_IPV6_OPTION_LENGTH);
+      LstIpv4Addr.domain = TCPIP_AF_INET;
+      LstRouterIpv4Dummy.domain = TCPIP_AF_INET;
 
-    /*polyspace +5 RTE:IDP [Justified:Low] "Pointers with this orange flag are
-    made sure that they are within their range by having necessary boundary
-    checks in order to prevent them from being illegally dereferenced." */
-    LpSduDataPtr[SD_TWO] = (uint8)SD_OPTION_TYPE_IPV6_MULTICAST;
+      (void)SoAd_GetLocalAddr(LpOptionsRef->ddLocalAddrSoConId,
+                              &LstIpv4Addr, &LpNetmaskDummy, &LstRouterIpv4Dummy);
 
-    LpSduDataPtr[SD_THREE] = (uint8)SD_ZERO;
+      /*redmine #50073*/
 
-    LstIpv6Addr.domain = TCPIP_AF_INET6;
+      Sd_HtonlArr(&LpSduDataPtr[SD_FOUR],
+                  &LstIpv4Addr.aaSockAddrInetData[SD_TWO]);
+      /*polyspace +5 RTE:IDP [Justified:Low] "Pointers with this orange flag are
+      made sure that they are within their range by having necessary boundary
+      checks in order to prevent them from being illegally dereferenced." */
+      LpSduDataPtr[SD_EIGHT] = (uint8) SD_ZERO;
 
-    (void)SoAd_GetRemoteAddr(LpOptionsRef->ddLocalAddrSoConId,
-                             &LstIpv6Addr);
-    Sd_HtonlArr(&LpSduDataPtr[SD_FOUR],
-                &LstIpv6Addr.aaSockAddrInetData[SD_TWO]);
-    Sd_HtonlArr(&LpSduDataPtr[SD_EIGHT],
-                &LstIpv6Addr.aaSockAddrInetData[SD_SIX]);
-    Sd_HtonlArr(&LpSduDataPtr[SD_TWELVE],
-                &LstIpv6Addr.aaSockAddrInetData[SD_TEN]);
-    Sd_HtonlArr(&LpSduDataPtr[SD_SIXTEEN],
-                &LstIpv6Addr.aaSockAddrInetData[SD_FOURTEEN]);
+      LpSduDataPtr[SD_NINE] = LpOptionsRef->ucProtocol;
 
-    /*polyspace +4 RTE:IDP [Justified:Low] "Pointers with this orange flag are
-    made sure that they are within their range by having necessary boundary
-    checks in order to prevent them from being illegally dereferenced." */
-    LpSduDataPtr[SD_TWENTY] = (uint8)SD_ZERO;
-    LpSduDataPtr[SD_TWENTY_ONE] = LpOptionsRef->ucProtocol;
+      Sd_HtonsArr(&LpSduDataPtr[SD_TEN],
+                  &LstIpv4Addr.aaSockAddrInetData[SD_ZERO]);
+      LusReturnVal = (uint16) SD_TWELVE;
+      break;
+    }
+    /* SWS_SD_00679 */
+    case SD_IPV6_ENDPOINT_OPTION:
+    {
+      Sd_HosttonetPtr(&LpSduDataPtr[SD_ZERO], SD_IPV6_OPTION_LENGTH);
+      /*polyspace +5 RTE:IDP [Justified:Low] "Pointers with this orange flag are
+      made sure that they are within their range by having necessary boundary
+      checks in order to prevent them from being illegally dereferenced." */
+      LpSduDataPtr[SD_TWO] = (uint8) SD_OPTION_TYPE_IPV6_ENDPOINT;
 
-    Sd_HtonsArr(&LpSduDataPtr[SD_TWENTY_TWO],
-                &LstIpv6Addr.aaSockAddrInetData[SD_ZERO]);
+      LpSduDataPtr[SD_THREE] = (uint8) SD_ZERO;
 
-    LusReturnVal = SD_TWENTY_FOUR;
-    break;
-  }
-  default:
-  {
-    LusReturnVal = SD_ZERO;
-    break;
-  }
+      LstIpv6Addr.domain = TCPIP_AF_INET6;
+      LstRouterIpv6Dummy.domain = TCPIP_AF_INET6;
+
+      (void)SoAd_GetLocalAddr(LpOptionsRef->ddLocalAddrSoConId,
+                              &LstIpv6Addr, &LpNetmaskDummy, &LstRouterIpv6Dummy);
+
+      LusReturnVal = Sd_SocketAddrHtonlConversion (LpSduDataPtr, LpOptionsRef, 
+        LstIpv6Addr);
+      break;
+    }
+    /*SWS_SD_00393
+    SWS_SD_00394*/
+    case SD_IPV4_MULTICAST_OPTION:
+    {
+      Sd_HosttonetPtr(&LpSduDataPtr[SD_ZERO], SD_IPV4_OPTION_LENGTH);
+      /*polyspace +5 RTE:IDP [Justified:Low] "Pointers with this orange flag are
+      made sure that they are within their range by having necessary boundary
+      checks in order to prevent them from being illegally dereferenced." */
+      LpSduDataPtr[SD_TWO] = (uint8)SD_OPTION_TYPE_IPV4_MULTICAST;
+
+      LpSduDataPtr[SD_THREE] = (uint8)SD_ZERO;
+
+      LstIpv4Addr.domain = TCPIP_AF_INET;
+
+      (void)SoAd_GetRemoteAddr(LpOptionsRef->ddLocalAddrSoConId,
+                              &LstIpv4Addr);
+
+      Sd_HtonlArr(&LpSduDataPtr[SD_FOUR],
+                  &LstIpv4Addr.aaSockAddrInetData[SD_TWO]);
+
+      /*polyspace +5 RTE:IDP [Justified:Low] "Pointers with this orange flag are
+        made sure that they are within their range by having necessary boundary
+        checks in order to prevent them from being illegally dereferenced." */
+      LpSduDataPtr[SD_EIGHT] = (uint8)SD_ZERO;
+
+      LpSduDataPtr[SD_NINE] = LpOptionsRef->ucProtocol;
+
+      Sd_HtonsArr(&LpSduDataPtr[SD_TEN],
+                  &LstIpv4Addr.aaSockAddrInetData[SD_ZERO]);
+      LusReturnVal = SD_TWELVE;
+      break;
+    }
+    /*SWS_SD_00399
+    SWS_SD_00404
+    SWS_SD_00413 */
+    case SD_IPV6_MULTICAST_OPTION:
+    {
+      Sd_HosttonetPtr(&LpSduDataPtr[SD_ZERO], (uint16) SD_IPV6_OPTION_LENGTH);
+
+      /*polyspace +5 RTE:IDP [Justified:Low] "Pointers with this orange flag are
+      made sure that they are within their range by having necessary boundary
+      checks in order to prevent them from being illegally dereferenced." */
+      LpSduDataPtr[SD_TWO] = (uint8) SD_OPTION_TYPE_IPV6_MULTICAST;
+
+      LpSduDataPtr[SD_THREE] = (uint8) SD_ZERO;
+
+      LstIpv6Addr.domain = TCPIP_AF_INET6;
+
+      (void) SoAd_GetRemoteAddr (LpOptionsRef->ddLocalAddrSoConId,
+                              &LstIpv6Addr);
+
+      LusReturnVal = Sd_SocketAddrHtonlConversion (LpSduDataPtr, LpOptionsRef, 
+        LstIpv6Addr);
+      break;
+    }
+    default:
+    {
+      LusReturnVal = SD_ZERO;
+      break;
+    }
   }
   return (LusReturnVal);
 }
@@ -2986,11 +3251,17 @@ static uint16 Sd_TransmitOption(
 #define SD_START_SEC_CODE
 #include "Sd_MemMap.h"
 
+/* parasoft-begin-suppress CERT_C-API00-a-3 
+"Reason: Sd_Tx_c_Cert_REF_1" */
+/* parasoft-begin-suppress CERT_C-DCL00-b-3 
+  "Reason: Sd_Tx_c_Cert_REF_2" */
 static void Sd_TxCreatePdu(
-    const uint16 LpQueueIndex[],
-    uint16 LusNoOfSendQueue,
-    uint8 LucSdInstanceIndex,
-    uint8 LucNoOfOptionsTx)
+    const uint16 * const LpQueueIndex,
+    const uint16 LusNoOfSendQueue,
+    const uint8 LucSdInstanceIndex,
+    const uint8 LucNoOfOptionsTx)
+/* parasoft-end-suppress CERT_C-API00-a-3 */
+/* parasoft-end-suppress CERT_C-DCL00-b-3 */
 {
   Sd_InstanceStaticType const *LpInstanceStatic;
   Sd_InstanceType *LpInstance;
@@ -3015,7 +3286,7 @@ static void Sd_TxCreatePdu(
 #if (STD_ON == SD_PRE_COMPILE_SINGLE)
   LpInstanceStatic = &Sd_GaaInstanceStatic[LucSdInstanceIndex];
 #else
-  LpInstanceStatic = ((Sd_GpConfigPtr->pInstanceStatic) + LucSdInstanceIndex);
+  LpInstanceStatic = &(Sd_GpConfigPtr->pInstanceStatic[LucSdInstanceIndex]);
 #endif
 
   LpInstance = &Sd_GaaInstance[LucSdInstanceIndex];
@@ -3087,7 +3358,7 @@ static void Sd_TxCreatePdu(
   SchM_Exit_Sd_MODE_STATUS_PROTECTION();
   LulTotalMessageLength = LulTotalMessageLength + SD_FOUR;
 
-  for (LusCount = SD_ZERO; LusCount < LucNoOfOptionsTx; LusCount++)
+  for (LusCount = SD_ZERO; LusCount < (uint16) LucNoOfOptionsTx; LusCount++)
   {
     SchM_Enter_Sd_MODE_STATUS_PROTECTION();
     LulCurrOptionLength = Sd_TransmitOption(
@@ -3236,7 +3507,7 @@ void Sd_CombineQueue(void)
   uint8 const *LpElementConfigOption;
   boolean LblConfigOptionPresent;
   boolean LblQueueOverflow;
-  Sd_TypeOfOptionsType LenTypeOfOption = {SD_ZERO};
+  Sd_TypeOfOptionsType LenTypeOfOption = {SD_CONFIGURATION_OPTION};
   uint8 LucSoConIndex;
   uint8 LucConfigIndex;
   uint8 LucNoOfValidIds;
@@ -3352,6 +3623,132 @@ void Sd_CombineQueue(void)
 #define SD_STOP_SEC_CODE
 #include "Sd_MemMap.h"
 
+
+/*******************************************************************************
+** Function Name        : Sd_SocketAddrHtonlConversion                                     **
+**                                                                            **
+** Service ID           : NA                                                  **
+**                                                                            **
+** Description          : This function reduces duplicate code to convert     **
+**                         htonl for IPv6 options.                            **
+**                                                                            **
+** Sync/Async           : Synchronous                                         **
+**                                                                            **
+** Re-entrancy          : Non - Reentrant                                     **
+**                                                                            **
+** Input Parameters     : None                                                **
+**                                                                            **
+** InOut parameter      : NA                                                  **
+**                                                                            **
+** Output Parameters    : NA                                                  **
+**                                                                            **
+** Return parameter     : uint16                                              **
+**                                                                            **
+** Preconditions        : Sd_Init must be called                              **
+**                                                                            **
+** Remarks              :                                                     **
+** Design ID            : SD_SDD_XXXX                                         **
+*******************************************************************************/
+#define SD_START_SEC_CODE
+#include "Sd_MemMap.h"
+/* parasoft-begin-suppress CERT_C-API00-a-3 
+"Reason: Sd_Tx_c_Cert_REF_1" */
+/* parasoft-begin-suppress CERT_C-DCL00-b-3 
+  "Reason: Sd_Tx_c_Cert_REF_2" */
+static uint16 Sd_SocketAddrHtonlConversion (uint8 *LpSduDataPtr,
+                                const Sd_OptionsRefType * const LpOptionsRef,
+                                const TcpIp_SockAddrType LstIpv6Addr)
+/* parasoft-end-suppress CERT_C-API00-a-3 */
+/* parasoft-end-suppress CERT_C-DCL00-b-3 */
+{
+
+  Sd_HtonlArr (&LpSduDataPtr[SD_FOUR],
+              &LstIpv6Addr.aaSockAddrInetData[SD_TWO]);
+  Sd_HtonlArr (&LpSduDataPtr[SD_EIGHT],
+              &LstIpv6Addr.aaSockAddrInetData[SD_SIX]);
+  Sd_HtonlArr (&LpSduDataPtr[SD_TWELVE],
+              &LstIpv6Addr.aaSockAddrInetData[SD_TEN]);
+  Sd_HtonlArr (&LpSduDataPtr[SD_SIXTEEN],
+              &LstIpv6Addr.aaSockAddrInetData[SD_FOURTEEN]);
+
+  /*polyspace +4 RTE:IDP [Justified:Low] "Pointers with this orange flag are
+  made sure that they are within their range by having necessary boundary
+  checks in order to prevent them from being illegally dereferenced." */
+  LpSduDataPtr[SD_TWENTY] = (uint8)SD_ZERO;
+  LpSduDataPtr[SD_TWENTY_ONE] = LpOptionsRef->ucProtocol;
+
+  Sd_HtonsArr (&LpSduDataPtr[SD_TWENTY_TWO],
+              &LstIpv6Addr.aaSockAddrInetData[SD_ZERO]);
+
+  return (SD_TWENTY_FOUR);
+}
+#define SD_STOP_SEC_CODE
+#include "Sd_MemMap.h"
+
+/*******************************************************************************
+** Function Name        : Sd_CheckOptionMatch                                     **
+**                                                                            **
+** Service ID           : NA                                                  **
+**                                                                            **
+** Description          : This function reduces duplicate code to convert     **
+**                         htonl for IPv6 options.                            **
+**                                                                            **
+** Sync/Async           : Synchronous                                         **
+**                                                                            **
+** Re-entrancy          : Non - Reentrant                                     **
+**                                                                            **
+** Input Parameters     : None                                                **
+**                                                                            **
+** InOut parameter      : NA                                                  **
+**                                                                            **
+** Output Parameters    : NA                                                  **
+**                                                                            **
+** Return parameter     : void                                              **
+**                                                                            **
+** Preconditions        : Sd_Init must be called                              **
+**                                                                            **
+** Remarks              :                                                     **
+** Design ID            : SD_SDD_XXXX                                         **
+*******************************************************************************/
+#define SD_START_SEC_CODE
+#include "Sd_MemMap.h"
+/* parasoft-begin-suppress CERT_C-API00-a-3 
+"Reason: Sd_Tx_c_Cert_REF_1" */
+/* parasoft-begin-suppress CERT_C-DCL00-b-3 
+  "Reason: Sd_Tx_c_Cert_REF_2" */
+static void Sd_CheckOptionMatch(
+  const Sd_TypeOfOptionsType * const LenTypeOfOption, 
+  const SoAd_SoConIdType * const LddSoConId1, 
+  const uint8 * const LucSoCon1Protocol, 
+  const uint8 * const LpNoOfOptionsTx, 
+  boolean *LblMatch, uint16 *LusMatchIndex)
+/* parasoft-end-suppress CERT_C-API00-a-3 */
+/* parasoft-end-suppress CERT_C-DCL00-b-3 */
+{
+  uint16 LusCount;
+  if (*LpNoOfOptionsTx < ((uint8) SD_SIXTEEN))
+  {
+    for (LusCount = SD_ZERO; ((LusCount < ((uint16) *LpNoOfOptionsTx)) &&
+                              (SD_FALSE == *LblMatch));
+        LusCount++)
+    {
+      /*polyspace +8 RTE:UNR [Justified:Low] "This condition will be true when configured value
+      match the received value." */
+      /*polyspace +6 RTE:OBAI [Justified:Low] "Pointers with this orange flag are
+        made sure that they are within their range by having necessary boundary
+        checks in order to prevent them from being out of bounds." */
+      if ((* LenTypeOfOption == Sd_GaaOptionsRef[LusCount].enTypeOfOption) &&
+          (* LddSoConId1 == Sd_GaaOptionsRef[LusCount].ddLocalAddrSoConId) &&
+          (* LucSoCon1Protocol == Sd_GaaOptionsRef[LusCount].ucProtocol))
+      {
+        *LblMatch = SD_TRUE;
+        *LusMatchIndex = LusCount;
+      }
+    }
+  }
+}
+#define SD_STOP_SEC_CODE
+#include "Sd_MemMap.h"
 /****************************************************************************
 **                   Parasoft violations end Section                       **
 ****************************************************************************/
@@ -3359,6 +3756,7 @@ void Sd_CombineQueue(void)
 /* parasoft-end-suppress MISRAC2012-RULE_20_1-a-4 */
 /* parasoft-end-suppress MISRAC2012-RULE_5_4-c-2 */
 /* parasoft-end-suppress MISRAC2012-RULE_5_4-d-2 */
+/* parasoft-end-suppress CERT_C-DCL19-a-3 */
 
 /*******************************************************************************
 **                      End of File                                           **

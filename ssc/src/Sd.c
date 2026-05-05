@@ -31,6 +31,7 @@
 ********************************************************************************
 ** Date         Changed By          Description                               **
 ********************************************************************************
+** 02-Apr-2026  Harshal Patil       Updated for Parasoft activity.            **
 ** 15-Sep-2025  Gourav Purohit      Initial Release.                          **
 *******************************************************************************/
 /*******************************************************************************
@@ -60,6 +61,51 @@
 * These macros are part of AUTOSAR Specific definitions for inclusion of 
 * memory map files for Code and Global data sections and configuration 
 * Specific macros present in .h, so this warning needs to be deviated." */
+
+/* parasoft-begin-suppress CERT_C-DCL19-a-3 "Reason: Parasoft warnning is about
+* declare variables as locally as possible, but ISO C90 Coding guidelines  
+* suggest the variables are declared at the start of the function." */
+
+/* parasoft-begin-suppress MISRAC2012-RULE_1_1-a-2 "Reason: This deviation  
+* is case to case for more than 31 initial characters in an external identifier. 
+* "Justification: As naming convetions are determined by Autosar standards and 
+* internal specifications the length of name shall not be restricted." */
+
+/* parasoft-begin-suppress CERT_C-DCL00-b-3 "Reason: This deviation is
+* for all the autosar API where signature change is not possible. Note:  
+* Has to be verified with AUTOSAR consortium, if standard inteface has issues 
+* having input variables as constant. Justification: Standard Autosar 
+* Interface provided cannot be tailored according to the violation" */
+
+/* parasoft-begin-suppress MISRAC2012-RULE_1_1-b-2 "Reason: This deviation  
+* is case to case for more than 31 initial characters in an external identifier. 
+* "Justification: As naming convetions are determined by Autosar standards and 
+* internal specifications the length of name shall not be restricted." */
+
+ /* parasoft-begin-suppress MISRAC2012-RULE_2_8-a-4 "Reason: This warning is 
+ * for global variables defined in cfg files and used in static files within  
+ * project scope, The tool reported wrongly report this as unused, Likely  
+ * due to cross file usage detection during testing scope analysis."
+ * Justification: "The deviation is applicable in case fo generated files. 
+ * The extenal linkage and their use is depednent on the generation and 
+ * cannot be taken care in the static code hence the deviation" */
+
+ /* #section Sd_c_MISRA_REF_1
+* Violates MISRAC2012-RULE_14_3-ac-2: "Reason: This deviation is case to case 
+* for all the global variables or MACROs which are not initiazed in function."
+* "Justification: Global variables are initialized in Init function and incase 
+* of the MACROs, they are generated in configuration file. */
+
+/* #section Sd_c_MISRA_REF_2
+* Violates MISRAC2012-RULE_8_7-a-4 "Reason: This deviation is case to case 
+* for global variable referenced only in the translation unit where it is 
+* defined. Justification: Variable is accessed in other file via pointer." */
+
+/* #section Sd_c_Cert_REF_3
+* Violates CERT_C-API00-a-3: "Reason: This deviation is case to case 
+* for all the Parameters which are not validated before using in function."
+* "Justification: Validation is done in calling function or at the time of 
+* actual use in called function. */
 
 /*******************************************************************************
 **                   MISRA-C:2012 violations Section                          **
@@ -414,34 +460,44 @@ TcpIp_SockAddrType Sd_GddIpv4Wildcard;
 TcpIp_SockAddrType Sd_GddIpv6Wildcard;
 #define SD_STOP_SEC_VAR_NO_INIT_UNSPECIFIED
 #include "Sd_MemMap.h"
+/* parasoft-begin-suppress MISRAC2012-RULE_8_7-a-4 
+"Reason: Sd_c_MISRA_REF_1" */
 /*Design ID : SD_SDD_0424*/
 #define SD_START_SEC_VAR_NO_INIT_32
 #include "Sd_MemMap.h"
 sint32 Sd_GslRandomState;
 #define SD_STOP_SEC_VAR_NO_INIT_32
 #include "Sd_MemMap.h"
+/* parasoft-end-suppress MISRAC2012-RULE_8_7-a-4 */
+/* parasoft-begin-suppress MISRAC2012-RULE_8_7-a-4 
+"Reason: Sd_c_MISRA_REF_1" */
 /*Design ID : SD_SDD_0426*/
 #define SD_START_SEC_VAR_NO_INIT_32
 #include "Sd_MemMap.h"
 uint32 Sd_GulRandomValue;
 #define SD_STOP_SEC_VAR_NO_INIT_32
 #include "Sd_MemMap.h"
+/* parasoft-end-suppress MISRAC2012-RULE_8_7-a-4 */
+/* parasoft-begin-suppress MISRAC2012-RULE_8_7-a-4 
+"Reason: Sd_c_MISRA_REF_1" */
 /*Design ID : SD_SDD_0419*/
 #define SD_START_SEC_VAR_CLEARED_BOOLEAN
 #include "Sd_MemMap.h"
 boolean Sd_GblRandomCalled;
 #define SD_STOP_SEC_VAR_CLEARED_BOOLEAN
 #include "Sd_MemMap.h"
+/* parasoft-end-suppress MISRAC2012-RULE_8_7-a-4 */
+/* parasoft-begin-suppress MISRAC2012-RULE_8_7-a-4 
+"Reason: Sd_c_MISRA_REF_1" */
 /*Design ID : SD_SDD_0416*/
-
 #define SD_START_SEC_VAR_NO_INIT_UNSPECIFIED
 #include "Sd_MemMap.h"
 Sd_SoConGroupType Sd_GaaSoConGroup[SD_NO_OF_SO_CON_GRPS];
 #define SD_STOP_SEC_VAR_NO_INIT_UNSPECIFIED
 #include "Sd_MemMap.h"
+/* parasoft-end-suppress MISRAC2012-RULE_8_7-a-4 */
 
 /*Design ID : SD_SDD_0415*/
-
 #define SD_START_SEC_VAR_NO_INIT_UNSPECIFIED
 #include "Sd_MemMap.h"
 Sd_SoConType Sd_GaaSoCon[SD_NO_OF_SOCKET_CONNECTIONS];
@@ -453,7 +509,10 @@ Sd_SoConType Sd_GaaSoCon[SD_NO_OF_SOCKET_CONNECTIONS];
      (STD_ON == SD_CLIENT_CONFIGURED))
 #define SD_START_SEC_VAR_NO_INIT_UNSPECIFIED
 #include "Sd_MemMap.h"
+/* parasoft-begin-suppress MISRAC2012-RULE_8_7-a-4 
+"Reason: Sd_c_MISRA_REF_1" */
 Sd_ClientCounterType Sd_GaaClientRequestCounter[SD_NO_OF_CLIENT_SERVICES];
+/* parasoft-end-suppress MISRAC2012-RULE_8_7-a-4 */
 #define SD_STOP_SEC_VAR_NO_INIT_UNSPECIFIED
 #include "Sd_MemMap.h"
 #endif
@@ -462,7 +521,11 @@ Sd_ClientCounterType Sd_GaaClientRequestCounter[SD_NO_OF_CLIENT_SERVICES];
      (STD_ON == SD_SERVER_CONFIGURED))
 #define SD_START_SEC_VAR_NO_INIT_UNSPECIFIED
 #include "Sd_MemMap.h"
-Sd_ServerAvailabilityCounterType Sd_GaaServerAvailabilityCounter[SD_NO_OF_SERVER_SERVICES];
+/* parasoft-begin-suppress MISRAC2012-RULE_8_7-a-4 
+"Reason: Sd_c_MISRA_REF_1" */
+Sd_ServerAvailabilityCounterType 
+Sd_GaaServerAvailabilityCounter[SD_NO_OF_SERVER_SERVICES];
+/* parasoft-end-suppress MISRAC2012-RULE_8_7-a-4 */
 #define SD_STOP_SEC_VAR_NO_INIT_UNSPECIFIED
 #include "Sd_MemMap.h"
 #endif
@@ -470,7 +533,10 @@ Sd_ServerAvailabilityCounterType Sd_GaaServerAvailabilityCounter[SD_NO_OF_SERVER
 #if (STD_ON == SD_SERVICE_GROUP_CONFIGURED)
 #define SD_START_SEC_VAR_CLEARED_BOOLEAN
 #include "Sd_MemMap.h"
+/* parasoft-begin-suppress MISRAC2012-RULE_8_7-a-4 
+"Reason: Sd_c_MISRA_REF_1" */
 boolean Sd_GaaServiceGrpIdFlag[SD_SERVICE_GROUP];
+/* parasoft-end-suppress MISRAC2012-RULE_8_7-a-4 */
 #define SD_STOP_SEC_VAR_CLEARED_BOOLEAN
 #include "Sd_MemMap.h"
 #endif
@@ -538,10 +604,13 @@ boolean Sd_GaaAclPolicyFlag  = SD_ZERO;
 *******************************************************************************/
 #define SD_START_SEC_CODE
 #include "Sd_MemMap.h"
+/* parasoft-begin-suppress CERT_C-API00-a-3 
+"Reason: Sd_c_Cert_REF_3" */
 /* polyspace-begin RTE:UNR [Justified:Low] "Refer Sd_c_Poly_REF_1"*/
 Std_ReturnType Sd_ServerServiceSetState(
     uint16 SdServerServiceHandleId,
     Sd_ServerServiceSetStateType ServerServiceState)
+/* parasoft-end-suppress CERT_C-API00-a-3 */
 {
   Std_ReturnType LddReturnValue;
 #if (STD_ON == SD_SERVER_CONFIGURED)
@@ -685,9 +754,12 @@ Std_ReturnType Sd_ServerServiceSetState(
 #define SD_START_SEC_CODE
 #include "Sd_MemMap.h"
 /* polyspace-begin RTE:UNR [Justified:Low] "Refer Sd_c_Poly_REF_1"*/
+/* parasoft-begin-suppress CERT_C-API00-a-3 
+"Reason: Sd_c_Cert_REF_3" */
 Std_ReturnType Sd_ClientServiceSetState(
     uint16 ClientServiceHandleId,
     Sd_ClientServiceSetStateType ClientServiceState)
+/* parasoft-end-suppress CERT_C-API00-a-3 */
 {
   Std_ReturnType LddReturnValue;
 #if (STD_ON == SD_CLIENT_CONFIGURED)
@@ -829,9 +901,13 @@ Module Test Case Reference SD_ETC_423, SWS ID SWS_SD_00410" */
 *******************************************************************************/
 #define SD_START_SEC_CODE
 #include "Sd_MemMap.h"
+/* polyspace-begin RTE:UNR [Justified:Low] "Refer Sd_c_Poly_REF_1"*/
+/* parasoft-begin-suppress CERT_C-API00-a-3 
+"Reason: Sd_c_Cert_REF_3" */
 Std_ReturnType Sd_ConsumedEventGroupSetState(
     uint16 SdConsumedEventGroupHandleId,
     Sd_ConsumedEventGroupSetStateType ConsumedEventGroupState)
+/* parasoft-end-suppress CERT_C-API00-a-3 */
 {
   Std_ReturnType LddReturnValue;
 #if (STD_ON == SD_CONSUMED_EV_GRP_CONFIGURED)
@@ -898,7 +974,7 @@ Module Test Case Reference SD_ETC_424, SWS ID SWS_SD_00469" */
 #else
       LusIndex =
           Sd_GpConfigPtr->pSd_GaaConEvGrpHandleMapArray[SdConsumedEventGroupHandleId];
-      LpConsumedEvGrpStatic = ((Sd_GpConfigPtr->pSd_GaaConsumedEvGrpStatic) + LusIndex);
+      LpConsumedEvGrpStatic = &(Sd_GpConfigPtr->pSd_GaaConsumedEvGrpStatic[LusIndex]);
 #endif
       /*polyspace +7 RTE:IDP [Justified:Low] "Pointers with this orange flag are
      made sure that they are within their range by having necessary boundary
@@ -973,8 +1049,11 @@ Module Test Case Reference SD_ETC_424, SWS ID SWS_SD_00469" */
 #if (STD_ON == SD_GET_VERSION_INFO)
 #define SD_START_SEC_CODE
 #include "Sd_MemMap.h"
+/* parasoft-begin-suppress CERT_C-API00-a-3 
+"Reason: Sd_c_Cert_REF_3" */
 void Sd_GetVersionInfo(
     Std_VersionInfoType * versioninfo)
+/* parasoft-end-suppress CERT_C-API00-a-3 */
 {
 /*SWS ID  SWS_SD_00497  SWS_SD_00124c   SWS_SD_00124g*/
 /* polyspace +5 RTE:UNR [Justified:Low] "This condition shall be True when
@@ -1045,8 +1124,11 @@ Module Test Case Reference SD_ETC_009, SWS ID SWS_SD_00497" */
 *******************************************************************************/
 #define SD_START_SEC_CODE
 #include "Sd_MemMap.h"
+/* parasoft-begin-suppress CERT_C-API00-a-3 
+"Reason: Sd_c_Cert_REF_3" */
 void Sd_Init(
     const Sd_ConfigType * ConfigPtr)
+/* parasoft-end-suppress CERT_C-API00-a-3 */
 {
   Sd_InstanceType *LpInstance;
   Sd_SoConType *LpSocket;
@@ -1058,8 +1140,10 @@ void Sd_Init(
   Std_ReturnType LddReturnValue;
   LddReturnValue = E_OK;
 #endif
-
+/* parasoft-begin-suppress MISRAC2012-RULE_14_3-ac-2 
+              "Reason: Sd_c_MISRA_REF_1" */
   if ((void *)SD_NVMBLOCK_ID != NULL_PTR)
+/* parasoft-end-suppress MISRAC2012-RULE_14_3-ac-2 */
   {
   #if (SD_NVM_BLOCK_LENGTH != SD_ZERO)
    NvM_ReadBlock(SD_NVMBLOCK_ID, SdShadowNvMRamBlockData);
@@ -1071,8 +1155,8 @@ void Sd_Init(
   {
     #if (SD_ROM_BLOCK == STD_ON)
 
-      Sd_GaaAclPolicyFlag = Sd_Gaa_NvMRomBlockData[0].bl_Sd_ACL_PolicyCheck;
-      memcpy(Sd_GaaClient_Server_List, Sd_Gaa_NvMRomBlockData[0].Sd_GaaServerClientList, sizeof(Sd_Gaa_NvMRomBlockData[0].Sd_GaaServerClientList));
+      Sd_GaaAclPolicyFlag = Sd_Gaa_NvMRomBlockData[SD_ZERO].bl_Sd_ACL_PolicyCheck;
+      memcpy(Sd_GaaClient_Server_List, Sd_Gaa_NvMRomBlockData[SD_ZERO].Sd_GaaServerClientList, sizeof(Sd_Gaa_NvMRomBlockData[SD_ZERO].Sd_GaaServerClientList));
     #endif
   }
 /* SWS ID  SWS_SD_00119  SWS_SD_00119e  SWS_SD_00122 */
@@ -1172,7 +1256,7 @@ void Sd_Init(
       }
 #else
       {
-        LpInstanceStatic = ((Sd_GpConfigPtr->pInstanceStatic) + LusCount);
+        LpInstanceStatic = &(Sd_GpConfigPtr->pInstanceStatic[LusCount]);
       }
 #endif
 
@@ -1194,7 +1278,6 @@ void Sd_Init(
       {
         (LpInstance->stSubnetAddr).domain = TCPIP_AF_INET6;
       }
-      /* [SWS_SD_00723]  (void) SoAd_OpenSoCon( LpInstanceStatic->ddTxPduId); */
       (void)SoAd_OpenSoCon(LpInstanceStatic->ddIpAddrSoConId);
       (void)SoAd_OpenSoCon(LpInstanceStatic->ddRxMulticastSoConId);
       (void)SoAd_OpenSoCon(LpInstanceStatic->ddRxUnicastSoConId);
@@ -1381,25 +1464,26 @@ void Sd_MainFunction(void)
   {
 	  errorstate = E_NOT_OK;
      NvM_GetErrorStatus ( SD_NVMBLOCK_ID, &errorstate);
-     if ((errorstate == E_OK) || (errorstate == 0x03) || (errorstate == 0x08))
+     if ((errorstate == E_OK) || (errorstate == SD_THREE) || 
+     (errorstate == SD_EIGHT))
      {
 		Sd_NvmReadInit = SD_FALSE;
 	  #if (SD_RAM_BLOCK == STD_ON)
-	   if (SdShadowNvMRamBlockData[0].bl_Sd_Nvm_Read_Write_Block_Flag == SD_TRUE)
+	   if (SdShadowNvMRamBlockData[SD_ZERO].bl_Sd_Nvm_Read_Write_Block_Flag == SD_TRUE)
 	   {
 			memcpy(Sd_Gaa_NvMRamBlockData, SdShadowNvMRamBlockData, 
 			sizeof(Sd_Gaa_NvMRamBlockData));
-			Sd_GaaAclPolicyFlag = Sd_Gaa_NvMRamBlockData[0].bl_Sd_ACL_PolicyCheck;
-			memcpy(Sd_GaaClient_Server_List, Sd_Gaa_NvMRamBlockData[0].
-			Sd_GaaServerClientList, sizeof(Sd_Gaa_NvMRamBlockData[0].Sd_GaaServerClientList));
+			Sd_GaaAclPolicyFlag = Sd_Gaa_NvMRamBlockData[SD_ZERO].bl_Sd_ACL_PolicyCheck;
+			memcpy(Sd_GaaClient_Server_List, Sd_Gaa_NvMRamBlockData[SD_ZERO].
+			Sd_GaaServerClientList, sizeof(Sd_Gaa_NvMRamBlockData[SD_ZERO].Sd_GaaServerClientList));
 	   }
 	   else
 	   {
 		   #if (SD_RAM_BLOCK == STD_ON)
-			Sd_Gaa_NvMRamBlockData[0].bl_Sd_Nvm_Read_Write_Block_Flag = (uint8)SD_TRUE;
-			memcpy(Sd_GaaClient_Server_List, Sd_Gaa_NvMRamBlockData[0].
-			Sd_GaaServerClientList, sizeof(Sd_Gaa_NvMRamBlockData[0].Sd_GaaServerClientList));
-			Sd_GaaAclPolicyFlag = Sd_Gaa_NvMRamBlockData[0].bl_Sd_ACL_PolicyCheck;
+			Sd_Gaa_NvMRamBlockData[SD_ZERO].bl_Sd_Nvm_Read_Write_Block_Flag = (uint8)SD_TRUE;
+			memcpy(Sd_GaaClient_Server_List, Sd_Gaa_NvMRamBlockData[SD_ZERO].
+			Sd_GaaServerClientList, sizeof(Sd_Gaa_NvMRamBlockData[SD_ZERO].Sd_GaaServerClientList));
+			Sd_GaaAclPolicyFlag = Sd_Gaa_NvMRamBlockData[SD_ZERO].bl_Sd_ACL_PolicyCheck;
 			(void)NvM_WriteBlock(SD_NVMBLOCK_ID, Sd_Gaa_NvMRamBlockData);
 		   #endif
 		   
@@ -1443,12 +1527,12 @@ void Sd_MainFunction(void)
 
 #if (SD_NO_OF_INSTANCES != SD_ONE)
 #if (STD_ON == SD_PRE_COMPILE_SINGLE)
-    for (LusCount = LusBaseIndex; LusCount < (LusBaseIndex +
-                                              SD_NO_OF_INSTANCES);
+    for (LusCount = LusBaseIndex; LusCount < 
+      (uint16)(LusBaseIndex + SD_NO_OF_INSTANCES);
          LusCount++)
 #else
-    for (LusCount = LusBaseIndex; LusCount < (LusBaseIndex +
-                                              (SD_NO_OF_INSTANCES / SD_NUM_OF_CFG_SETS));
+    for (LusCount = LusBaseIndex; LusCount < (uint16)(LusBaseIndex +
+          (uint16)(SD_NO_OF_INSTANCES / SD_NUM_OF_CFG_SETS));
          LusCount++)
 #endif
 #else
@@ -1459,7 +1543,7 @@ void Sd_MainFunction(void)
 #if (STD_ON == SD_PRE_COMPILE_SINGLE)
       LpInstanceStatic = &Sd_GaaInstanceStatic[LusCount];
 #else
-      LpInstanceStatic = ((Sd_GpConfigPtr->pInstanceStatic) + LusCount);
+      LpInstanceStatic = &(Sd_GpConfigPtr->pInstanceStatic[LusCount]);
 #endif
 
 #if (STD_ON == SD_SERVER_CONFIGURED)
@@ -1467,14 +1551,15 @@ void Sd_MainFunction(void)
       LusBaseIndex2 = LpInstanceStatic->usBaseServerServiceIndex;
       LusNoOfElements2 = LpInstanceStatic->usNoOfServerServices;
 
-      for (LusCount2 = LusBaseIndex2; LusCount2 < (LusBaseIndex2 + LusNoOfElements2); LusCount2++)
+      for (LusCount2 = LusBaseIndex2; LusCount2 < 
+        (uint16)(LusBaseIndex2 + LusNoOfElements2); LusCount2++)
       {
         LpServerService = &Sd_GaaServerService[LusCount2];
 #if (STD_ON == SD_PRE_COMPILE_SINGLE)
         LpServerServiceStatic = &Sd_GaaServerServiceStatic[LusCount2];
 #else
         LpServerServiceStatic =
-            ((Sd_GpConfigPtr->pSd_GaaServerServiceStatic) + LusCount2);
+            &(Sd_GpConfigPtr->pSd_GaaServerServiceStatic[LusCount2]);
 #endif
         Sd_ServerStateMachine(LpInstance, LpInstanceStatic, LpServerService,
                               LpServerServiceStatic);
@@ -1483,13 +1568,14 @@ void Sd_MainFunction(void)
         LusBaseIndex3 = LpServerServiceStatic->usBaseEvHandlerIndex;
         LusNoOfElements3 = LpServerServiceStatic->usNoOfEvHandlers;
 
-        for (LusCount3 = LusBaseIndex3; LusCount3 < (LusBaseIndex3 + LusNoOfElements3); LusCount3++)
+        for (LusCount3 = LusBaseIndex3; LusCount3 < 
+          (uint16)(LusBaseIndex3 + LusNoOfElements3); LusCount3++)
         {
           LpEvHandler = &Sd_GaaEvHandler[LusCount3];
 #if (STD_ON == SD_PRE_COMPILE_SINGLE)
           LpEvHandlerStatic = &Sd_GaaEvHandlerStatic[LusCount3];
 #else
-          LpEvHandlerStatic = ((Sd_GpConfigPtr->pSd_GaaEvHandlerStatic) + LusCount3);
+          LpEvHandlerStatic = &(Sd_GpConfigPtr->pSd_GaaEvHandlerStatic[LusCount3]);
 #endif
           Sd_EvHandlerMain(LpServerService, LpEvHandler, LpEvHandlerStatic);
         }
@@ -1500,28 +1586,31 @@ void Sd_MainFunction(void)
 #if (STD_ON == SD_CLIENT_CONFIGURED)
       LusBaseIndex2 = LpInstanceStatic->usBaseClientServiceIndex;
       LusNoOfElements2 = LpInstanceStatic->usNoOfClientServices;
-      for (LusCount2 = LusBaseIndex2; LusCount2 < (LusBaseIndex2 + LusNoOfElements2); LusCount2++)
+      for (LusCount2 = LusBaseIndex2; LusCount2 < 
+        (uint16)(LusBaseIndex2 + LusNoOfElements2); LusCount2++)
       {
         LpClientService = &Sd_GaaClientService[LusCount2];
 #if (STD_ON == SD_PRE_COMPILE_SINGLE)
         LpClientServiceStatic = &Sd_GaaClientServiceStatic[LusCount2];
 #else
-        LpClientServiceStatic =
-            ((Sd_GpConfigPtr->pSd_GaaClientServiceStatic) + LusCount2);
+        LpClientServiceStatic = 
+        &(Sd_GpConfigPtr->pSd_GaaClientServiceStatic[LusCount2]);
 #endif
         Sd_ClientStateMachine(LpClientService, LpClientServiceStatic);
 
 #if (STD_ON == SD_CONSUMED_EV_GRP_CONFIGURED)
-        LusBaseIndex3 = LpClientServiceStatic->usBaseConEventGrp;
-        LusNoOfElements3 = LpClientServiceStatic->usNoOfConEventGrp;
+        LusBaseIndex3 = (uint16)LpClientServiceStatic->usBaseConEventGrp;
+        LusNoOfElements3 = (uint16)LpClientServiceStatic->usNoOfConEventGrp;
 
-        for (LusCount3 = LusBaseIndex3; LusCount3 < (LusBaseIndex3 + LusNoOfElements3); LusCount3++)
+        for (LusCount3 = LusBaseIndex3; LusCount3 < 
+          (uint16) (LusBaseIndex3 + LusNoOfElements3); LusCount3++)
         {
           LpConsumedEvGrp = &Sd_GaaConsumedEvGrp[LusCount3];
 #if (STD_ON == SD_PRE_COMPILE_SINGLE)
           LpConsumedEvGrpStatic = &Sd_GaaConsumedEvGrpStatic[LusCount3];
 #else
-          LpConsumedEvGrpStatic = ((Sd_GpConfigPtr->pSd_GaaConsumedEvGrpStatic) + LusCount3);
+          LpConsumedEvGrpStatic =
+           &(Sd_GpConfigPtr->pSd_GaaConsumedEvGrpStatic[LusCount3]);
 #endif
           Sd_ConsumedEvGrpMain(LpClientService, LpConsumedEvGrp,
                                LpConsumedEvGrpStatic);
@@ -1636,7 +1725,7 @@ void Sd_ServiceGroupStart(
   Sd_ServerServiceType *LpServerService;
   uint16 LpServerArraySize;
 #endif
-  uint8 LusCount;
+  uint16 LusCount;
 
   uint16 LpSize;
 
@@ -1661,7 +1750,7 @@ void Sd_ServiceGroupStart(
 #else
     LpSize = (*(Sd_GpConfigPtr->pServgrpSerStatic + ServiceGroupId)).usArray_size;
 #endif
-    for (LusCount = (uint8)SD_ZERO; LusCount < LpSize; LusCount++)
+    for (LusCount = (uint16)SD_ZERO; LusCount < LpSize; LusCount++)
     {
 #if (STD_ON == SD_PRE_COMPILE_SINGLE)
       LpServerArraySize = Sd_GaaServicegroupServerArray[ServiceGroupId][LusCount];
@@ -1707,7 +1796,7 @@ void Sd_ServiceGroupStart(
 #else
     LpSize = (*(Sd_GpConfigPtr->pServgrpCliStatic + ServiceGroupId)).usArray_size;
 #endif
-    for (LusCount = (uint8)SD_ZERO; LusCount < LpSize; LusCount++)
+    for (LusCount = (uint16)SD_ZERO; LusCount < LpSize; LusCount++)
     {
 #if (STD_ON == SD_PRE_COMPILE_SINGLE)
       LpClientArraySize = Sd_GaaServicegroupClientArray[ServiceGroupId][LusCount];
@@ -1739,12 +1828,16 @@ void Sd_ServiceGroupStart(
     }
   }
 #endif
+
+  if (E_OK == LddReturnValue)
+  {
   /*polyspace +6 RTE:OBAI [Justified:Low] "Pointers with this orange flag are
     made sure that they are within their range by having necessary boundary
     checks in order to prevent them from being out of bounds." */
   SchM_Enter_Sd_MODE_STATUS_PROTECTION();
   Sd_GaaServiceGrpIdFlag[ServiceGroupId] = (boolean)SD_TRUE;
   SchM_Exit_Sd_MODE_STATUS_PROTECTION();
+  }
 }
 /* polyspace-end RTE:UNR [Justified:Low] "Refer Sd_c_Poly_REF_1"*/
 #define SD_STOP_SEC_CODE
@@ -1805,12 +1898,20 @@ void Sd_ServiceGroupStop(Sd_ServiceGroupIdType ServiceGroupId)
 
   Sd_ServerServiceType *LpServerService;
   uint16 LpServerArraySize;
-#endif
-  uint8 LusCount;
 
-  uint16 LpSize;
+  #if (STD_ON == SD_PRE_COMPILE_SINGLE)
+  uint16 LusNoOfServersPerGrp;
+  #endif
+#endif
+  uint16 LusCount;
+  uint16 LusSize;
 
   Std_ReturnType LddReturnValue;
+
+  #if ((STD_ON == SD_PRE_COMPILE_SINGLE) && (STD_ON == SD_CLIENT_CONFIGURED))
+  uint16 LusNoOfClientsPerGrp;
+  #endif
+
   LddReturnValue = E_OK;
 
   if (ServiceGroupId >= SD_SERVICE_GROUP)
@@ -1829,27 +1930,44 @@ void Sd_ServiceGroupStop(Sd_ServiceGroupIdType ServiceGroupId)
   {
 
 #if (STD_ON == SD_PRE_COMPILE_SINGLE)
-    LpSize = Sd_GaaServicegroupClientStatic[ServiceGroupId].usArray_size;
+
+    LusNoOfClientsPerGrp = (uint16)
+    (sizeof(Sd_GaaServicegroupClientArray[SD_ZERO]) / 
+    sizeof(Sd_GaaServicegroupClientArray[SD_ZERO][SD_ZERO]));
+    LusSize = Sd_GaaServicegroupClientStatic[ServiceGroupId].usArray_size;
 #else
-    LpSize = (*(Sd_GpConfigPtr->pServgrpCliStatic + ServiceGroupId)).usArray_size;
+    LusSize = 
+    (*(Sd_GpConfigPtr->pServgrpCliStatic + ServiceGroupId)).usArray_size;
 #endif
-    for (LusCount = (uint8)SD_ZERO; LusCount < LpSize; LusCount++)
+    for (LusCount = (uint16)SD_ZERO; LusCount < LusSize; LusCount++)
     {
 #if (STD_ON == SD_PRE_COMPILE_SINGLE)
-      LpClientArraySize = Sd_GaaServicegroupClientArray[ServiceGroupId][LusCount];
+      if (LusCount < LusNoOfClientsPerGrp)
+      {
+        LpClientArraySize = 
+        Sd_GaaServicegroupClientArray[ServiceGroupId][LusCount];
+      }
+      else
+      {
+        LpClientArraySize = (uint16) SD_ZERO;
+      }
 #else
-      LpClientArraySize = Sd_GpConfigPtr->pServgrpCliArray[(ServiceGroupId * SD_SERVICE_GROUP) + LusCount];
+      LpClientArraySize = 
+      Sd_GpConfigPtr->pServgrpCliArray[(ServiceGroupId * SD_SERVICE_GROUP) + 
+        LusCount];
 #endif
       LpClientService = &Sd_GaaClientService[LpClientArraySize];
 
-      if ((LpClientService->enClientSetState == SD_CLIENT_SERVICE_REQUESTED) || (Sd_GaaClientRequestCounter[LpClientArraySize].usClientRequestCounter != SD_ZERO))
+      if ((LpClientService->enClientSetState == SD_CLIENT_SERVICE_REQUESTED) || 
+      (Sd_GaaClientRequestCounter[LpClientArraySize].usClientRequestCounter != SD_ZERO))
       {
 
         SchM_Enter_Sd_MODE_STATUS_PROTECTION();
         Sd_GaaClientRequestCounter[LpClientArraySize].usClientRequestCounter--;
         SchM_Exit_Sd_MODE_STATUS_PROTECTION();
 
-        if ((Sd_GaaClientRequestCounter[LpClientArraySize].usClientRequestCounter == SD_ZERO) && (LpClientService->enClientSetState == SD_CLIENT_SERVICE_REQUESTED))
+        if ((Sd_GaaClientRequestCounter[LpClientArraySize].usClientRequestCounter == SD_ZERO)
+         && (LpClientService->enClientSetState == SD_CLIENT_SERVICE_REQUESTED))
         {
 
           SchM_Enter_Sd_MODE_STATUS_PROTECTION();
@@ -1867,16 +1985,27 @@ void Sd_ServiceGroupStop(Sd_ServiceGroupIdType ServiceGroupId)
   if (E_OK == LddReturnValue)
   {
 #if (STD_ON == SD_PRE_COMPILE_SINGLE)
-    LpSize = Sd_GaaServicegroupServerStatic[ServiceGroupId].usArray_size;
+    LusNoOfServersPerGrp = (uint16)
+    (sizeof(Sd_GaaServicegroupServerArray[SD_ZERO]) / 
+    sizeof(Sd_GaaServicegroupServerArray[SD_ZERO][SD_ZERO]));
+    LusSize = Sd_GaaServicegroupServerStatic[ServiceGroupId].usArray_size;
 #else
-    LpSize = (*(Sd_GpConfigPtr->pServgrpSerStatic + ServiceGroupId)).usArray_size;
+    LusSize = (*(Sd_GpConfigPtr->pServgrpSerStatic + ServiceGroupId)).usArray_size;
 #endif
-    for (LusCount = (uint8)SD_ZERO; LusCount < LpSize; LusCount++)
+    for (LusCount = (uint16)SD_ZERO; LusCount < LusSize; LusCount++)
     {
 #if (STD_ON == SD_PRE_COMPILE_SINGLE)
-      LpServerArraySize = Sd_GaaServicegroupServerArray[ServiceGroupId][LusCount];
+      if (LusCount < LusNoOfServersPerGrp)
+      {
+          LpServerArraySize = Sd_GaaServicegroupServerArray[ServiceGroupId][LusCount];
+      }
+      else
+      {
+          LpServerArraySize = (uint16) SD_ZERO;
+      }
 #else
-      LpServerArraySize = Sd_GpConfigPtr->pServgrpSerArray[(ServiceGroupId * SD_SERVICE_GROUP) + LusCount];
+      LpServerArraySize = Sd_GpConfigPtr->pServgrpSerArray[(ServiceGroupId * 
+        SD_SERVICE_GROUP) + LusCount];
 #endif
       LpServerService = &Sd_GaaServerService[LpServerArraySize];
 
@@ -1901,12 +2030,15 @@ void Sd_ServiceGroupStop(Sd_ServiceGroupIdType ServiceGroupId)
     }
   }
 #endif
-  /*polyspace +8 RTE:OBAI [Justified:Low] "Pointers with this orange flag are
-   made sure that they are within their range by having necessary boundary
-   checks in order to prevent them from being out of bounds." */
-  SchM_Enter_Sd_MODE_STATUS_PROTECTION();
-  Sd_GaaServiceGrpIdFlag[ServiceGroupId] = (boolean)SD_FALSE;
-  SchM_Exit_Sd_MODE_STATUS_PROTECTION();
+  if (E_OK == LddReturnValue)
+  {
+    /*polyspace +8 RTE:OBAI [Justified:Low] "Pointers with this orange flag are
+    made sure that they are within their range by having necessary boundary
+    checks in order to prevent them from being out of bounds." */
+    SchM_Enter_Sd_MODE_STATUS_PROTECTION();
+    Sd_GaaServiceGrpIdFlag[ServiceGroupId] = (boolean)SD_FALSE;
+    SchM_Exit_Sd_MODE_STATUS_PROTECTION();
+  }
 }
 /* polyspace-end RTE:UNR [Justified:Low] "Refer Sd_c_Poly_REF_1"*/
 #define SD_STOP_SEC_CODE
@@ -1942,7 +2074,7 @@ void Sd_ServiceGroupStop(Sd_ServiceGroupIdType ServiceGroupId)
 **                                                                            **
 ** Remarks              : Global Variable(s)  : Sd_GaaInstance,               **
 **                                              Sd_GaaClientServiceStatic,    **
-**                                              Sd_GaaClientServic            **
+**                                              Sd_GaaClientService           **
 **                                              usClientRequestCounter        **
 **                                              usServerAvailabilityCounter   **
 **                                                                            **
@@ -1958,11 +2090,15 @@ void Sd_ServiceGroupStop(Sd_ServiceGroupIdType ServiceGroupId)
 #if (SD_SERVER_CONFIGURED == STD_ON)
 #define SD_START_SEC_CODE
 #include "Sd_MemMap.h"
+/* parasoft-begin-suppress CERT_C-API00-a-3 
+"Reason: Sd_c_Cert_REF_3" */
 /* polyspace-begin RTE:UNR [Justified:Low] "Refer Sd_c_Poly_REF_1"*/
 Std_ReturnType Sd_RequestRoutingGroupEnable(uint32 PduHeaderID,
                              SoAd_SoConIdType SoConId)
+/* parasoft-end-suppress CERT_C-API00-a-3 */
 {
-  uint32 lusCount, lusCount2;
+  uint32 lusCount;
+  uint32 lusCount2;
   uint32 LusServiceId;
   uint32 LusBaseIndex;
 
@@ -2008,7 +2144,7 @@ Std_ReturnType Sd_RequestRoutingGroupEnable(uint32 PduHeaderID,
 
 #else
 
-      LpInstanceStatic = ((Sd_GpConfigPtr->pInstanceStatic) + lusCount);
+      LpInstanceStatic = &(Sd_GpConfigPtr->pInstanceStatic[lusCount]);
 
 #endif
       LusBaseIndex = LpInstanceStatic->usBaseServerServiceIndex;
@@ -2021,7 +2157,7 @@ Std_ReturnType Sd_RequestRoutingGroupEnable(uint32 PduHeaderID,
         LpServerServiceStatic = &Sd_GaaServerServiceStatic[lusCount2];
 #else
         LpServerServiceStatic =
-            ((Sd_GpConfigPtr->pSd_GaaServerServiceStatic) + lusCount2);
+            &(Sd_GpConfigPtr->pSd_GaaServerServiceStatic[lusCount2]);
 #endif
         if (LpServerServiceStatic->usServiceId == LusServiceId)
         {
@@ -2177,37 +2313,38 @@ Std_ReturnType Sd_RequestRoutingGroupEnable(uint32 PduHeaderID,
 	LbServiceFlag  = (boolean)SD_FALSE;
     LusServiceId = (PduHeaderID >> SD_SIXTEEN);
 #if (STD_ON == SD_PRE_COMPILE_SINGLE)
-    for (lusCount = SD_ZERO; (lusCount < (uint32)SD_NO_OF_INSTANCES) &&
-                             ((LddReturnValue == E_NOT_OK));
+    for (lusCount = SD_ZERO; (lusCount < (uint32)SD_NO_OF_INSTANCES);
          lusCount++)
 #else
-    for (lusCount = SD_ZERO; ((lusCount < (SD_NO_OF_INSTANCES / SD_NUM_OF_CFG_SETS)) &&
-                              (LddReturnValue == E_NOT_OK));
+    for (lusCount = SD_ZERO; 
+      (lusCount < (SD_NO_OF_INSTANCES / SD_NUM_OF_CFG_SETS));
          lusCount++)
 #endif
     {
 #if (STD_ON == SD_PRE_COMPILE_SINGLE)
       LpInstanceStatic = &Sd_GaaInstanceStatic[lusCount];
 #else
-      LpInstanceStatic = ((Sd_GpConfigPtr->pInstanceStatic) + lusCount);
+      LpInstanceStatic = &(Sd_GpConfigPtr->pInstanceStatic[lusCount]);
 #endif
-      LusBaseIndex = LpInstanceStatic->usBaseServerServiceIndex;
-      for (lusCount2 = LusBaseIndex; (lusCount2 < (LusBaseIndex +
-                                                  (LpInstanceStatic->usNoOfServerServices))) && (!LbServiceFlag) ;
-           lusCount2++)
+      LusBaseIndex = (uint32)LpInstanceStatic->usBaseServerServiceIndex;
+      for (lusCount2 = LusBaseIndex; (lusCount2 < (uint32)
+        (LusBaseIndex + (uint32)(LpInstanceStatic->usNoOfServerServices))) && 
+        (!LbServiceFlag); lusCount2++)
       {
 #if (STD_ON == SD_PRE_COMPILE_SINGLE)
         LpServerServiceStatic = &Sd_GaaServerServiceStatic[lusCount2];
 #else
-        LpServerServiceStatic = ((Sd_GpConfigPtr->pSd_GaaServerServiceStatic) + lusCount2);
+        LpServerServiceStatic = 
+        &(Sd_GpConfigPtr->pSd_GaaServerServiceStatic[lusCount2]);
 #endif
-        if (LpServerServiceStatic->usServiceId == LusServiceId)
+        if ((uint32) LpServerServiceStatic->usServiceId == LusServiceId)
         {
           LddReturnValue = E_OK;
-		  LbServiceFlag = (boolean)SD_TRUE;
+		      LbServiceFlag = (boolean)SD_TRUE;
           (void)SoAd_EnableSpecificRouting(
               LpServerServiceStatic->ddActivationRoGrpId,
               SoConId);
+          break;
         }
         else
         {
@@ -2266,20 +2403,19 @@ Std_ReturnType Sd_RequestRoutingGroupEnable(uint32 PduHeaderID,
 
 #define SD_START_SEC_CODE
 #include "Sd_MemMap.h"
+/* parasoft-begin-suppress CERT_C-API00-a-3 
+"Reason: Sd_c_Cert_REF_3" */
 Std_ReturnType Sd_AclCheckEnable(boolean EnableAcl)
+/* parasoft-end-suppress CERT_C-API00-a-3 */
 {
+  Std_ReturnType LddReturnValue;
 #if (SD_RAM_BLOCK == STD_ON)
-  Std_ReturnType LddReturnValue = E_NOT_OK;
-  Sd_Gaa_NvMRamBlockData[0].bl_Sd_ACL_PolicyCheck = EnableAcl;
-  Sd_GaaAclPolicyFlag = Sd_Gaa_NvMRamBlockData[0].bl_Sd_ACL_PolicyCheck;
+  Sd_Gaa_NvMRamBlockData[SD_ZERO].bl_Sd_ACL_PolicyCheck = EnableAcl;
+  Sd_GaaAclPolicyFlag = Sd_Gaa_NvMRamBlockData[SD_ZERO].bl_Sd_ACL_PolicyCheck;
   LddReturnValue = NvM_WriteBlock(SD_NVMBLOCK_ID, Sd_Gaa_NvMRamBlockData);
 #else
-  Std_ReturnType LddReturnValue = E_NOT_OK;
-  if ((EnableAcl) || (!EnableAcl))
-  {
-    LddReturnValue = E_NOT_OK;
-  }
-
+  LddReturnValue = E_NOT_OK;
+  SD_UNUSED(EnableAcl);
 #endif
 
   return LddReturnValue;
@@ -2327,16 +2463,22 @@ Std_ReturnType Sd_AclCheckEnable(boolean EnableAcl)
 *******************************************************************************/
 #define SD_START_SEC_CODE
 #include "Sd_MemMap.h"
+/* parasoft-begin-suppress CERT_C-API00-a-3 
+"Reason: Sd_c_Cert_REF_3" */
 Std_ReturnType Sd_AclUpdate(
     uint16 SdServiceId,
     uint16 ServiceInstanceId,
     const TcpIp_SockAddrType * RemoteAddrPtr,
     Sd_AclUpdateType RequestType)
+/* parasoft-end-suppress CERT_C-API00-a-3 */
 {
   Sd_ProviderConsumerType Sd_Request_type;
   Std_ReturnType LddReturnValue = E_OK;
 
+  /* parasoft-begin-suppress MISRAC2012-RULE_14_3-ac-2 
+              "Reason: Sd_c_MISRA_REF_1" */
   if ((void *)SD_NVMBLOCK_ID == NULL_PTR)
+  /* parasoft-end-suppress MISRAC2012-RULE_14_3-ac-2 */
   {
     LddReturnValue = E_NOT_OK;
   }
@@ -2379,6 +2521,11 @@ Std_ReturnType Sd_AclUpdate(
 /* parasoft-end-suppress MISRAC2012-RULE_5_4-c-2 */
 /* parasoft-end-suppress MISRAC2012-RULE_5_4-d-2 */
 /* parasoft-end-suppress MISRAC2012-RULE_1_1-c-2 */
+/* parasoft-end-suppress CERT_C-DCL19-a-3 */
+/* parasoft-end-suppress MISRAC2012-RULE_1_1-a-2 */
+/* parasoft-end-suppress CERT_C-DCL00-b-3 */
+/* parasoft-end-suppress MISRAC2012-RULE_1_1-b-2 */
+/* parasoft-end-suppress MISRAC2012-RULE_2_8-a-4 */
 
 /*******************************************************************************
 **                      End of File                                           **

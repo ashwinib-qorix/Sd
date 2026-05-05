@@ -34,6 +34,17 @@
 ** 07-Jul-2025  Gourav Purohit      Initial Release.                          **
 **                                                                            **
 *******************************************************************************/
+
+/****************************************************************************
+**                   Parasoft violations Section                           **
+****************************************************************************/
+
+/* #section Sd_Version_c_MISRA_REF_1
+* Violates MISRAC2012-RULE_20_9-b-2: "Reason: Macro might not be defined.
+* Justification: Even though the code containing these macros is not enabled, 
+* still parasoft is generating warning falsely" */
+
+
 /*Design ID : SD_SDD_0341,SD_SDD_0337*/
 /*******************************************************************************
 **                      Include Section                                       **
@@ -76,13 +87,15 @@
 #endif
 
 #if (STD_ON == SD_DEV_ERROR_DETECT)
+/* parasoft-begin-suppress MISRAC2012-RULE_20_9-b-2 
+          "Reason: Sd_Version_c_MISRA_REF_1" */
 #if (DET_AR_RELEASE_MAJOR_VERSION != SD_DET_AR_RELEASE_MAJOR_VERSION)
 #error "Det.h : Mismatch in Specification Major Version"
 #endif
 #if (DET_AR_RELEASE_MINOR_VERSION != SD_DET_AR_RELEASE_MINOR_VERSION)
 #error "Det.h : Mismatch in Specification Minor Version"
 #endif
-
+/* parasoft-end-suppress MISRAC2012-RULE_20_9-b-2 */
 #endif
 
 #if (DEM_AR_RELEASE_MAJOR_VERSION != SD_DEM_AR_RELEASE_MAJOR_VERSION)
