@@ -66,7 +66,7 @@ SD_SDD_175,SD_SDD_0535,SD_SDD_0534,SD_SDD_0537,SD_SDD_0536 */
  * (after the = sign) */
 /*Design ID : SD_SDD_0035*/
 #define SD_OTHERSERV_SIZE (32U)
-#define SD_MEMSET MEMSET
+#define SD_MEMSET  (void *) memset
 
 #define SD_ZERO (0x00U)
 #define SD_ONE (0x01U)

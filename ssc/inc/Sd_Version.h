@@ -31,9 +31,10 @@
 ********************************************************************************
 ** Date         Changed By          Description                               **
 ********************************************************************************
-** 07-Jul-2025  Samarth Golwalker   Initial Release.              	      **
-** 08-Aug-2025  Gourav Purohit      Version Updated to 0.2.0.     	      **
+** 08-Apr-2026  Harshal Patil       Version Updated to 0.4.0.     	      **
 ** 01-Sep-2025  Gourav Purohit      Version Updated to 0.3.0.     	      **
+** 08-Aug-2025  Gourav Purohit      Version Updated to 0.2.0.     	      **
+** 07-Jul-2025  Samarth Golwalker   Initial Release.              	      **
 *******************************************************************************/
 #ifndef SD_VERSION_H
 #define SD_VERSION_H
@@ -76,7 +77,7 @@ so, this version will be same as Sd module major and minor version.*/
 #define SD_VERSION_AR_RELEASE_REVISION_VERSION 0
 
 #define SD_VERSION_SW_MAJOR_VERSION 0
-#define SD_VERSION_SW_MINOR_VERSION 3
+#define SD_VERSION_SW_MINOR_VERSION 4
 #define SD_VERSION_SW_PATCH_VERSION 0
 
 /*******************************************************************************

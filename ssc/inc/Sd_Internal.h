@@ -205,6 +205,9 @@
 #define SD_THIRTY_TWO_SET_BIT (0XFFFFFFFFU)
 #define SD_SEC_TO_MS (0x03E8U)
 
+/* Macro for the 'otherserv=' string used in option config */
+#define SD_OTHERSERV_STRING   "otherserv="
+
 /*******************************************************************************
 **                      Global Data                                           **
 *******************************************************************************/
@@ -706,19 +709,40 @@ extern Sd_ProviderConsumerListType Sd_GaaClient_Server_List[SD_NO_OF_ROM_ALLOWED
 #endif
 #endif
 
-    
-
-
 
 /*******************************************************************************
 **                      Function Prototypes                                   **
 *******************************************************************************/
 
+#define SD_START_SEC_CODE
+#include "Sd_MemMap.h"
+boolean Sd_MatchService(
+    uint16 LusServiceIdRecd,
+    uint16 LusServiceIdStatic,
+    const uint8 * LpOtherServStatic,
+    uint16 LusOtherServIndex,
+    uint16 LusOtherServLength,
+    const Sd_EntryType * LpEntry,
+    const Sd_OptionsDataType * LpOptionsData);
+#define SD_STOP_SEC_CODE
+#include "Sd_MemMap.h"
+
+#if (STD_ON == SD_CLIENT_CONFIGURED)
+#define SD_START_SEC_CODE
+#include "Sd_MemMap.h"
+Std_ReturnType Sd_OfferRecdCheckOptions(
+    const Sd_InstanceStaticType * LpInstanceStatic,
+    const Sd_ClientServiceStaticType * LpClientServiceStatic,
+    const uint8 LucOptionsCode);
+#define SD_STOP_SEC_CODE
+#include "Sd_MemMap.h"
+#endif
+
 #if (STD_ON == SD_SERVER_CONFIGURED)
 #define SD_START_SEC_CODE
 #include "Sd_MemMap.h"
 void Sd_ServerServiceDownEntered(
-    const Sd_ServerServiceStaticType * LpServerServiceStatic);
+    const Sd_ServerServiceStaticType * const LpServerServiceStatic);
 #define SD_STOP_SEC_CODE
 #include "Sd_MemMap.h"
 #endif
@@ -727,10 +751,10 @@ void Sd_ServerServiceDownEntered(
 #define SD_START_SEC_CODE
 #include "Sd_MemMap.h"
 void Sd_ServerStateMachine(
-    const Sd_InstanceType * LpInstance,
-    const Sd_InstanceStaticType * LpInstanceStatic,
+    const Sd_InstanceType * const LpInstance,
+    const Sd_InstanceStaticType * const LpInstanceStatic,
     Sd_ServerServiceType * LpServerService,
-    const Sd_ServerServiceStaticType * LpServerServiceStatic);
+    const Sd_ServerServiceStaticType * const LpServerServiceStatic);
 #define SD_STOP_SEC_CODE
 #include "Sd_MemMap.h"
 #endif
@@ -739,9 +763,9 @@ void Sd_ServerStateMachine(
 #define SD_START_SEC_CODE
 #include "Sd_MemMap.h"
 void Sd_EvHandlerMain(
-    const Sd_ServerServiceType * LpServerService,
+    const Sd_ServerServiceType * const LpServerService,
     Sd_EvHandlerType * LpEvHandler,
-    const Sd_EvHandlerStaticType * LpEvHandlerStatic);
+    const Sd_EvHandlerStaticType * const LpEvHandlerStatic);
 #define SD_STOP_SEC_CODE
 #include "Sd_MemMap.h"
 #endif
@@ -751,7 +775,7 @@ void Sd_EvHandlerMain(
 #include "Sd_MemMap.h"
 void Sd_EvHandlerRelease(
     Sd_EvHandlerType * LpEvHandler,
-    const Sd_EvHandlerStaticType * LpEvHandlerStatic);
+    const Sd_EvHandlerStaticType * const LpEvHandlerStatic);
 #define SD_STOP_SEC_CODE
 #include "Sd_MemMap.h"
 #endif
@@ -784,218 +808,6 @@ void Sd_RemoveClientFromFanout(
 #include "Sd_MemMap.h"
 #endif
 
-#if (STD_ON == SD_SERVER_CONFIGURED)
-#define SD_START_SEC_CODE
-#include "Sd_MemMap.h"
-void Sd_ServerServiceWaitEntered(
-    Sd_ServerServiceType * LpServerService,
-    const Sd_ServerServiceStaticType * LpServerServiceStatic);
-#define SD_STOP_SEC_CODE
-#include "Sd_MemMap.h"
-#endif
-
-#if (STD_ON == SD_SERVER_CONFIGURED)
-#define SD_START_SEC_CODE
-#include "Sd_MemMap.h"
-void Sd_ServerStateInitialWait(
-    Sd_ServerServiceType * LpServerService,
-    const Sd_ServerServiceStaticType * LpServerServiceStatic);
-#define SD_STOP_SEC_CODE
-#include "Sd_MemMap.h"
-#endif
-
-#if (STD_ON == SD_SERVER_CONFIGURED)
-#define SD_START_SEC_CODE
-#include "Sd_MemMap.h"
-void Sd_ServerStateRepetition(
-    Sd_ServerServiceType * LpServerService,
-    const Sd_ServerServiceStaticType * LpServerServiceStatic);
-#define SD_STOP_SEC_CODE
-#include "Sd_MemMap.h"
-#endif
-
-#if (STD_ON == SD_SERVER_CONFIGURED)
-#define SD_START_SEC_CODE
-#include "Sd_MemMap.h"
-void Sd_ServerStateMain(
-    Sd_ServerServiceType * LpServerService,
-    const Sd_ServerServiceStaticType * LpServerServiceStatic);
-#define SD_STOP_SEC_CODE
-#include "Sd_MemMap.h"
-#endif
-
-#if (STD_ON == SD_EV_HANDLER_CONFIGURED)
-#define SD_START_SEC_CODE
-#include "Sd_MemMap.h"
-/* polyspace-begin RTE:UNR [Justified:Low] "Refer Sd_c_Poly_REF_1"*/
-void Sd_ResetToWildcardServer(
-    const Sd_InstanceStaticType * LpInstanceStatic,
-    const Sd_EvHandlerSubGrpType * LpEvHandlerSubGrp,
-    Sd_TcpUdpEnumType enTcpUdp);
-#define SD_STOP_SEC_CODE
-#include "Sd_MemMap.h"
-#endif
-
-#if (STD_ON == SD_EV_HANDLER_CONFIGURED)
-#define SD_START_SEC_CODE
-#include "Sd_MemMap.h"
-/* polyspace-begin RTE:UNR [Justified:Low] "Refer Sd_c_Poly_REF_1"*/
-Std_ReturnType Sd_FindTcpIndex(
-  const Sd_ServerServiceStaticType * LpServerServiceStatic,
-  const Sd_EvHandlerStaticType * LpEvHandlerStatic,
-  Sd_EvHandlerSubGrpType * LpEvHandlerSubGrp,
-  const TcpIp_SockAddrType * LpIpAddrTcp,
-  uint8 LucOptionsCode);
-#define SD_STOP_SEC_CODE
-#include "Sd_MemMap.h"
-#endif
-
-#if (STD_ON == SD_EV_HANDLER_CONFIGURED)
-#define SD_START_SEC_CODE
-#include "Sd_MemMap.h"
-/* polyspace-begin RTE:UNR [Justified:Low] "Refer Sd_c_Poly_REF_1"*/
-Std_ReturnType Sd_AddClientToFanoutTcp(
-    const Sd_ServerServiceStaticType * LpServerServiceStatic,
-    Sd_EvHandlerType * LpEvHandler,
-    const Sd_EvHandlerStaticType * LpEvHandlerStatic,
-    Sd_EvHandlerSubGrpType * LpEvHandlerSubGrp,
-    const TcpIp_SockAddrType * LpIpAddrTcp,
-    uint8 LucOptionsCode,
-    Std_ReturnType Sd_FoundTcpIndex);
-#define SD_STOP_SEC_CODE
-#include "Sd_MemMap.h"
-#endif
-
-#if (STD_ON == SD_EV_HANDLER_CONFIGURED)
-#define SD_START_SEC_CODE
-#include "Sd_MemMap.h"
-void Sd_AddClienttoFanoutUdpActions(
-    Sd_EvHandlerType * LpEvHandler,
-    const Sd_EvHandlerStaticType * LpEvHandlerStatic,
-    Sd_EvHandlerSubGrpType * LpEvHandlerSubGrp,
-    SoAd_SoConIdType LddMatchSocketIndex);
-#define SD_STOP_SEC_CODE
-#include "Sd_MemMap.h"
-#endif
-
-#if (STD_ON == SD_EV_HANDLER_CONFIGURED)
-#define SD_START_SEC_CODE
-#include "Sd_MemMap.h"
-Std_ReturnType Sd_FindUdpIndex(
-  const Sd_ServerServiceStaticType * LpServerServiceStatic,
-  const Sd_EvHandlerStaticType * LpEvHandlerStatic,
-  Sd_EvHandlerSubGrpType * LpEvHandlerSubGrp,
-  const TcpIp_SockAddrType * LpIpAddrUdp,
-  uint8 LucOptionsCode);
-#define SD_STOP_SEC_CODE
-#include "Sd_MemMap.h"
-#endif
-
-#if (STD_ON == SD_EV_HANDLER_CONFIGURED)
-#define SD_START_SEC_CODE
-#include "Sd_MemMap.h"
-Std_ReturnType Sd_AddClientToFanoutUdp(
-    const Sd_ServerServiceStaticType * LpServerServiceStatic,
-    Sd_EvHandlerType * LpEvHandler,
-    const Sd_EvHandlerStaticType * LpEvHandlerStatic,
-    Sd_EvHandlerSubGrpType * LpEvHandlerSubGrp,
-    const TcpIp_SockAddrType * LpIpAddrUdp,
-    uint8 LucOptionsCode,
-    Std_ReturnType Sd_FoundUdpIndex);
-#define SD_STOP_SEC_CODE
-#include "Sd_MemMap.h"
-#endif
-
-#if (STD_ON == SD_EV_HANDLER_CONFIGURED)
-#define SD_START_SEC_CODE
-#include "Sd_MemMap.h"
-Std_ReturnType Sd_AddClientCheck(
-    const Sd_EvHandlerSubGrpType * LpEvHandlerSubGrp,
-    boolean LblTcp,
-    const TcpIp_SockAddrType * LpIpAddr);
-#define SD_STOP_SEC_CODE
-#include "Sd_MemMap.h"
-#endif
-
-#if (STD_ON == SD_CLIENT_CONFIGURED)
-#define SD_START_SEC_CODE
-#include "Sd_MemMap.h"
-void Sd_ClientServiceWaitEntered(
-    Sd_ClientServiceType * LpClientService,
-    const Sd_ClientServiceStaticType * LpClientServiceStatic);
-#define SD_STOP_SEC_CODE
-#include "Sd_MemMap.h"
-#endif
-
-#if (STD_ON == SD_CLIENT_CONFIGURED)
-#define SD_START_SEC_CODE
-#include "Sd_MemMap.h"
-void Sd_ClientStateDown(
-    const Sd_InstanceType * LpInstance,
-    Sd_ClientServiceType * LpClientService,
-    const Sd_ClientServiceStaticType * LpClientServiceStatic);
-#define SD_STOP_SEC_CODE
-#include "Sd_MemMap.h"
-#endif
-
-#if (STD_ON == SD_CLIENT_CONFIGURED)
-#define SD_START_SEC_CODE
-#include "Sd_MemMap.h"
-void Sd_ClientStateInitialWait(
-    Sd_ClientServiceType * LpClientService,
-    const Sd_ClientServiceStaticType * LpClientServiceStatic);
-#define SD_STOP_SEC_CODE
-#include "Sd_MemMap.h"
-#endif
-
-#if (STD_ON == SD_CLIENT_CONFIGURED)
-#define SD_START_SEC_CODE
-#include "Sd_MemMap.h"
-void Sd_ClientStateRepetition(
-    Sd_ClientServiceType * LpClientService,
-    const Sd_ClientServiceStaticType * LpClientServiceStatic);
-#define SD_STOP_SEC_CODE
-#include "Sd_MemMap.h"
-#endif
-
-#if (STD_ON == SD_CLIENT_CONFIGURED)
-#define SD_START_SEC_CODE
-#include "Sd_MemMap.h"
-/* polyspace-begin RTE:UNR [Justified:Low] "Refer Sd_c_Poly_REF_1"*/
-void Sd_ClientStateMain(
-    Sd_ClientServiceType * LpClientService,
-    const Sd_ClientServiceStaticType * LpClientServiceStatic,
-    boolean LblOfferTtlExpired);
-#define SD_STOP_SEC_CODE
-#include "Sd_MemMap.h"
-#endif
-
-#if (STD_ON == SD_CLIENT_CONFIGURED)
-#define SD_START_SEC_CODE
-#include "Sd_MemMap.h"
-/* polyspace-begin RTE:UNR [Justified:Low] "Refer Sd_c_Poly_REF_1"*/
-Std_ReturnType Sd_ClientSetUpTcpConnection(
-    const Sd_InstanceStaticType * LpInstanceStatic,
-    Sd_ClientServiceType * LpClientService,
-    const Sd_ClientServiceStaticType * LpClientServiceStatic,
-    const TcpIp_SockAddrType * LpIpAddrTcp);
-#define SD_STOP_SEC_CODE
-#include "Sd_MemMap.h"
-#endif
-
-#if (STD_ON == SD_CLIENT_CONFIGURED)
-#define SD_START_SEC_CODE
-#include "Sd_MemMap.h"
-/* polyspace-begin RTE:UNR [Justified:Low] "Refer Sd_c_Poly_REF_1"*/
-Std_ReturnType Sd_ClientSetUpUdpConnection(
-    const Sd_InstanceStaticType * LpInstanceStatic,
-    Sd_ClientServiceType * LpClientService,
-    const Sd_ClientServiceStaticType * LpClientServiceStatic,
-    const TcpIp_SockAddrType * LpIpAddrUdp);
-#define SD_STOP_SEC_CODE
-#include "Sd_MemMap.h"
-#endif
-
 #if (STD_ON == SD_CLIENT_CONFIGURED)
 #if (STD_ON == SD_SERVICE_GROUP_CONFIGURED)
 #define SD_START_SEC_CODE
@@ -1022,13 +834,13 @@ Std_ReturnType Sd_MulticastMatchSocket_Rem_Addr_Off(
 #endif
 #define SD_START_SEC_CODE
 #include "Sd_MemMap.h"
-Sd_SoconIndexRertunType * 
-Sd_Acl_UniqueAddress(
+void Sd_Acl_UniqueAddress(
     const Sd_ClientServiceStaticType * LpClientServiceStatic,
-    TcpIp_SockAddrType * LpOptionTcpAddr,
-    TcpIp_SockAddrType * LpOptionUdpAddr,
+    const TcpIp_SockAddrType * LpOptionTcpAddr,
+    const TcpIp_SockAddrType * LpOptionUdpAddr,
     uint8 LucOptionsCode,
-    const Sd_InstanceType * LpInstance);
+    const Sd_InstanceType * LpInstance,    
+    Sd_SoconIndexRertunType * LpWildcardSocketIndexPtr);
 #define SD_STOP_SEC_CODE
 #include "Sd_MemMap.h"
 
@@ -1283,7 +1095,7 @@ Std_ReturnType Sd_RxCheckHeader(
 #define SD_START_SEC_CODE
 #include "Sd_MemMap.h"
 Std_ReturnType Sd_RxGetEntry(
-    const uint8 LpPduDataPtr[],
+    const uint8 * LpPduDataPtr,
     Sd_EntryType * LpEntry,
     uint8 LucNoOfOptions);
 #define SD_STOP_SEC_CODE
@@ -1293,9 +1105,9 @@ Std_ReturnType Sd_RxGetEntry(
 #include "Sd_MemMap.h"
 Std_ReturnType Sd_RxGetAllOptions(
     const Sd_InstanceStaticType * LpInstanceStatic,
-    const uint8 LpOptionsPtr[],
+    const uint8 * LpOptionsPtr,
     uint32 LulLengthOfOptions,
-    Sd_OptionsDataType LpRxOptionsData[],
+    Sd_OptionsDataType * LpRxOptionsData,
     uint8 * LpNoOfOptions);
 #define SD_STOP_SEC_CODE
 #include "Sd_MemMap.h"
@@ -1407,256 +1219,6 @@ void Sd_StopOfferRecdActions(
 #define SD_STOP_SEC_CODE
 #include "Sd_MemMap.h"
 
-#define SD_START_SEC_CODE
-#include "Sd_MemMap.h"
-Std_ReturnType Sd_FillTypeOfEntry(
-    const uint8 LucEntryType,
-    const uint32 LulTtlSec,
-    Sd_EntryType * LpEntry);
-#define SD_STOP_SEC_CODE
-#include "Sd_MemMap.h"
-
-#define SD_START_SEC_CODE
-#include "Sd_MemMap.h"
-Std_ReturnType Sd_CheckIndexInRange(
-    uint8 LucIndex1,
-    uint8 LucNoOfOptions1,
-    uint8 LucIndex2,
-    uint8 LucNoOfOptions2,
-    uint8 LucTotalNoOfOptions);
-#define SD_STOP_SEC_CODE
-#include "Sd_MemMap.h"
-
-#define SD_START_SEC_CODE
-#include "Sd_MemMap.h"
-void Sd_GetOptionConfig(
-    uint16 LusOptionLength,
-    const uint8 LpOptionsPtr[],
-    uint16 * LpOptPtrIndex,
-    Sd_OptionsDataType LpRxOptionsData[],
-    uint8 * LpNoOfOptions,
-    boolean * LpMalformedOption);
-#define SD_STOP_SEC_CODE
-#include "Sd_MemMap.h"
-
-#define SD_START_SEC_CODE
-#include "Sd_MemMap.h"
-void Sd_GetOptionIpV4(
-    const Sd_InstanceStaticType * LpInstanceStatic,
-    uint16 LusOptionLength,
-    Sd_TypeOfOptionsType LenTypeOfOption,
-    const uint8 LpOptionsPtr[],
-    uint16 * LpOptPtrIndex,
-    Sd_OptionsDataType LpRxOptionsData[],
-    uint8 * LpNoOfOptions,
-    boolean * LpMalformedOption);
-#define SD_STOP_SEC_CODE
-#include "Sd_MemMap.h"
-
-#define SD_START_SEC_CODE
-#include "Sd_MemMap.h"
-void Sd_MatchOtherServSingle(
-    const Sd_OptionsDataType * LpCurrOption,
-    const uint8 LpOtherServStatic[],
-    uint16 LusOtherServIndex,
-    uint16 LusOtherServLength,
-    boolean * LpOtherServMatch);
-#define SD_STOP_SEC_CODE
-#include "Sd_MemMap.h"
-
-#define SD_START_SEC_CODE
-#include "Sd_MemMap.h"
-boolean Sd_MatchOtherServ(
-    const uint8 LpOtherServStatic[],
-    uint16 LusOtherServIndex,
-    uint16 LusOtherServLength,
-    const Sd_EntryType * LpEntry,
-    const Sd_OptionsDataType * LpOptionsData);
-#define SD_STOP_SEC_CODE
-#include "Sd_MemMap.h"
-
-#define SD_START_SEC_CODE
-#include "Sd_MemMap.h"
-boolean Sd_MatchService(
-    uint16 LusServiceIdRecd,
-    uint16 LusServiceIdStatic,
-    const uint8 * LpOtherServStatic,
-    uint16 LusOtherServIndex,
-    uint16 LusOtherServLength,
-    const Sd_EntryType * LpEntry,
-    const Sd_OptionsDataType * LpOptionsData);
-#define SD_STOP_SEC_CODE
-#include "Sd_MemMap.h"
-
-#if (STD_ON == SD_EV_HANDLER_CONFIGURED)
-#define SD_START_SEC_CODE
-#include "Sd_MemMap.h"
-Std_ReturnType Sd_SubscribeRecdActions(
-    const Sd_InstanceType * LpInstance,
-    const Sd_InstanceStaticType * LpInstanceStatic,
-    const Sd_ServerServiceStaticType * LpServerServiceStatic,
-    Sd_EvHandlerType * LpEvHandler,
-    const Sd_EvHandlerStaticType * LpEvHandlerStatic,
-    const TcpIp_SockAddrType * LpRemoteAddr,
-    const Sd_EntryType * LpEntryData,
-    const Sd_OptionsDataType * LpOptionsData,
-    uint8 LucTotalNoOfOptions,
-    uint8 LucCounter,
-    uint8 LucReturnCode_ACL);
-#define SD_STOP_SEC_CODE
-#include "Sd_MemMap.h"
-#endif
-
-#if (STD_ON == SD_CLIENT_CONFIGURED)
-#define SD_START_SEC_CODE
-#include "Sd_MemMap.h"
-Std_ReturnType Sd_OfferRecdCheckOptions(
-    const Sd_InstanceStaticType * LpInstanceStatic,
-    const Sd_ClientServiceStaticType * LpClientServiceStatic,
-    const uint8 LucOptionsCode);
-#define SD_STOP_SEC_CODE
-#include "Sd_MemMap.h"
-#endif
-
-#if (STD_ON == SD_CLIENT_CONFIGURED)
-#define SD_START_SEC_CODE
-#include "Sd_MemMap.h"
-void Sd_OfferRecdDown(
-    Sd_ClientServiceType * LpClientService,
-    const Sd_ClientServiceStaticType * LpClientServiceStatic,
-    const TcpIp_SockAddrType * LpIpAddrTcp,
-    const TcpIp_SockAddrType * LpIpAddrUdp,
-    uint32 LulTtlSec);
-#define SD_STOP_SEC_CODE
-#include "Sd_MemMap.h"
-#endif
-
-#if (STD_ON == SD_CLIENT_CONFIGURED)
-#define SD_START_SEC_CODE
-#include "Sd_MemMap.h"
-void Sd_OfferRecdInitialWait(
-    Sd_ClientServiceType * LpClientService,
-    const Sd_ClientServiceStaticType * LpClientServiceStatic,
-    const TcpIp_SockAddrType * LpIpAddrTcp,
-    const TcpIp_SockAddrType * LpIpAddrUdp,
-    uint8 LucOptionsCode,
-    const TcpIp_SockAddrType * LpRemoteAddr,
-    uint32 LulTtlSec,
-    boolean LblUnicast,
-    uint8 LucReturnCode_ACL);
-#define SD_STOP_SEC_CODE
-#include "Sd_MemMap.h"
-#endif
-
-#if (STD_ON == SD_CLIENT_CONFIGURED)
-#define SD_START_SEC_CODE
-#include "Sd_MemMap.h"
-void Sd_OfferRecdRepetition(
-    Sd_ClientServiceType * LpClientService,
-    const Sd_ClientServiceStaticType * LpClientServiceStatic,
-    const TcpIp_SockAddrType * LpIpAddrTcp,
-    const TcpIp_SockAddrType * LpIpAddrUdp,
-    uint8 LucOptionsCode,
-    uint32 LulTtlSec,
-    uint8 LucReturnCode_ACL);
-#define SD_STOP_SEC_CODE
-#include "Sd_MemMap.h"
-#endif
-
-#if (STD_ON == SD_CLIENT_CONFIGURED)
-#define SD_START_SEC_CODE
-#include "Sd_MemMap.h"
-void Sd_OfferRecdMain(
-    Sd_ClientServiceType * LpClientService,
-    const Sd_ClientServiceStaticType * LpClientServiceStatic,
-    const TcpIp_SockAddrType * LpIpAddrTcp,
-    const TcpIp_SockAddrType * LpIpAddrUdp,
-    uint8 LucOptionsCode,
-    const TcpIp_SockAddrType * LpRemoteAddr,
-    uint32 LulTtlSec,
-    boolean LblUnicast,
-    uint8 LucReturnCode_ACL);
-#define SD_STOP_SEC_CODE
-#include "Sd_MemMap.h"
-#endif
-
-#if ((STD_ON == SD_CONSUMED_EV_GRP_CONFIGURED) && \
-     (STD_ON == SD_MULTICAST_GRP_INDEX_CONFIGURED))
-#define SD_START_SEC_CODE
-#include "Sd_MemMap.h"
-Std_ReturnType Sd_MulticastMatchSoConGroup(
-    const Sd_InstanceStaticType * LpInstanceStatic,
-    Sd_ConsumedEvGrpType * LpConsumedEvGrp,
-    const Sd_ConsumedEvGrpStaticType * LpConsumedEvGrpStatic,
-    const TcpIp_SockAddrType * LpIpAddrUdp,
-    SoAd_SoConIdType * LpSoConGrpIndex);
-#define SD_STOP_SEC_CODE
-#include "Sd_MemMap.h"
-#endif
-
-#if ((STD_ON == SD_CONSUMED_EV_GRP_CONFIGURED) && \
-     (STD_ON == SD_MULTICAST_GRP_INDEX_CONFIGURED))
-#define SD_START_SEC_CODE
-#include "Sd_MemMap.h"
-Std_ReturnType Sd_MulticastMatchSocket(
-    const Sd_InstanceStaticType * LpInstanceStatic,
-    const Sd_ClientServiceType * LpClientService,
-    const Sd_SoConGroupStaticType * LpSoConGrpStatic,
-    SoAd_SoConIdType * LpSoConId);
-#define SD_STOP_SEC_CODE
-#include "Sd_MemMap.h"
-#endif
-
-#if (STD_ON == SD_CONSUMED_EV_GRP_CONFIGURED)
-#define SD_START_SEC_CODE
-#include "Sd_MemMap.h"
-void Sd_SubscribeAckRecdActions(
-    const Sd_InstanceType * LpInstance,
-    const Sd_InstanceStaticType * LpInstanceStatic,
-    const Sd_ClientServiceType * LpClientService,
-    Sd_ConsumedEvGrpType * LpConsumedEvGrp,
-    const Sd_ConsumedEvGrpStaticType * LpConsumedEvGrpStatic,
-    const Sd_EntryType * LpEntryData,
-    const Sd_OptionsDataType * LpOptionsData,
-    uint8 LucTotalNoOfOptions);
-#define SD_STOP_SEC_CODE
-#include "Sd_MemMap.h"
-#endif
-
-#if (STD_ON == SD_CLIENT_CONFIGURED)
-#define SD_START_SEC_CODE
-#include "Sd_MemMap.h"
-void Sd_SubscribeNackRecdActions(
-    const Sd_ClientServiceStaticType * LpClientServiceStatic,
-    const TcpIp_SockAddrType * LpRemoteAddr,
-    const uint8 LpBaseEntriesSduPtr[],
-    uint8 LucNoOfEntries,
-    uint8 LucNoOfOptions,
-    uint16 LusServiceId,
-    uint16 LusInstanceId,
-    uint8 LucMajorVersion,
-    uint8 LucCounter,
-    uint16 LusEventGroupId);
-#define SD_STOP_SEC_CODE
-#include "Sd_MemMap.h"
-#endif
-
-#if (SD_IPV6_ENABLED == STD_ON)
-#define SD_START_SEC_CODE
-#include "Sd_MemMap.h"
-void Sd_GetOptionIpV6(
-    const Sd_InstanceStaticType * LpInstanceStatic,
-    uint16 LusOptionLength,
-    Sd_TypeOfOptionsType LenTypeOfOption,
-    const uint8 LpOptionsPtr[],
-    uint16 * LpOptPtrIndex,
-    Sd_OptionsDataType LpRxOptionsData[],
-    uint8 * LpNoOfOptions,
-    boolean * LpMalformedOption);
-#define SD_STOP_SEC_CODE
-#include "Sd_MemMap.h"
-#endif
-
 #if (STD_ON == SD_CLIENT_CONFIGURED)
 #if (STD_ON == SD_SUBSCRIBE_EVENTGROUP_RETRY_ENABLE)
 #define SD_START_SEC_CODE
@@ -1680,8 +1242,8 @@ void Sd_SubscibeEventGroupRetry(
 void Sd_SendOffer(
     const Sd_ServerServiceStaticType * LpServerServiceStatic,
     const TcpIp_SockAddrType * LpSendAddr,
-    uint32 LulDelay,
-    boolean blSendUnicast);
+    const uint32 LulDelay,
+    const boolean blSendUnicast);
 #define SD_STOP_SEC_CODE
 #include "Sd_MemMap.h"
 #endif
@@ -1691,7 +1253,7 @@ void Sd_SendOffer(
 #include "Sd_MemMap.h"
 void Sd_SendStopOffer(
     const Sd_ServerServiceStaticType * LpServerServiceStatic,
-    uint32 LulDelay);
+    const uint32 LulDelay);
 #define SD_STOP_SEC_CODE
 #include "Sd_MemMap.h"
 #endif
@@ -1702,7 +1264,7 @@ void Sd_SendSubscribeAck(
     const Sd_EvHandlerStaticType * LpEvHandlerStatic,
     const Sd_EntryType * LpEntryData,
     const TcpIp_SockAddrType * LpSendAddr,
-    uint32 LulDelay);
+    const uint32 LulDelay);
 #define SD_STOP_SEC_CODE
 #include "Sd_MemMap.h"
 
@@ -1712,7 +1274,7 @@ void Sd_SendSubscribeNack(
     const Sd_InstanceStaticType * LpInstanceStatic,
     const Sd_EntryType * LpEntryData,
     const TcpIp_SockAddrType * LpSendAddr,
-    uint32 LulDelay);
+    const uint32 LulDelay);
 #define SD_STOP_SEC_CODE
 #include "Sd_MemMap.h"
 
@@ -1720,7 +1282,7 @@ void Sd_SendSubscribeNack(
 #include "Sd_MemMap.h"
 void Sd_SendFind(
     const Sd_ClientServiceStaticType * LpClientServiceStatic,
-    uint32 LulDelay);
+    const uint32 LulDelay);
 #define SD_STOP_SEC_CODE
 #include "Sd_MemMap.h"
 
@@ -1730,7 +1292,7 @@ void Sd_SendFind(
 void Sd_SendSubscribe(
     const Sd_ConsumedEvGrpStaticType * LpConsumedEvGrpStatic,
     const TcpIp_SockAddrType * LpSendAddr,
-    uint32 LulDelay);
+    const uint32 LulDelay);
 #define SD_STOP_SEC_CODE
 #include "Sd_MemMap.h"
 #endif
@@ -1741,30 +1303,7 @@ void Sd_SendSubscribe(
 void Sd_SendStopSubscribe(
     const Sd_ConsumedEvGrpStaticType * LpConsumedEvGrpStatic,
     const TcpIp_SockAddrType * LpSendAddr,
-    uint32 LulDelay);
-#define SD_STOP_SEC_CODE
-#include "Sd_MemMap.h"
-#endif
-
-#define SD_START_SEC_CODE
-#include "Sd_MemMap.h"
-Std_ReturnType Sd_Ipv4Lengthcheck(
-    const Sd_InstanceStaticType * LpInstanceStatic,
-    const Sd_InstanceType * LpInstance,
-    uint32 LulSubnetAddr,
-    uint32 LulAddr);
-#define SD_STOP_SEC_CODE
-#include "Sd_MemMap.h"
-#if (STD_ON == SD_IPV6_ENABLED)
-#define SD_START_SEC_CODE
-#include "Sd_MemMap.h"
-Std_ReturnType Sd_Ipv6Lengthcheck(
-    const Sd_InstanceStaticType * LpInstanceStatic,
-    const Sd_InstanceType * LpInstance,
-    uint32 LulSubnetAddr,
-    uint32 LulAddr,
-    uint32 LaaAddrMask[],
-    uint8 LucCount);
+    const uint32 LulDelay);
 #define SD_STOP_SEC_CODE
 #include "Sd_MemMap.h"
 #endif
